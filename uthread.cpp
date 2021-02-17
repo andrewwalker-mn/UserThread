@@ -29,7 +29,15 @@ typedef struct join_queue_entry {
 
 // Queues
 static deque<TCB*> ready_queue;
+static deque<TCB*> block_queue;
+static deque<TCB*> finish_queue;
 
+// thread ID
+static int cur_ID = 0;
+
+// track current thread
+
+static TCB* cur_thread;
 
 // Interrupt Management --------------------------------------------------------
 
@@ -110,14 +118,23 @@ void stub(void *(*start_routine)(void *), void *arg)
 
 int uthread_init(int quantum_usecs)
 {
+        TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, READY);
+        cur_ID += 1;
+        addToReadyQueue(new_thread);
+
         // Initialize any data structures
         // Setup timer interrupt and handler
         // Create a thread for the caller (main) thread
+        return 0;
 }
 
 int uthread_create(void* (*start_routine)(void*), void* arg)
 {
-        // Create a new thread and add it to the ready queue
+  // Create a new thread and add it to the ready queue
+  cur_ID += 1;
+  TCB *new_thread = new TCB(cur_ID, (*start_routine)(void*), arg, READY);
+  addToReadyQueue(new_thread);
+  return cur_ID;
 }
 
 int uthread_join(int tid, void **retval)
@@ -129,6 +146,7 @@ int uthread_join(int tid, void **retval)
 
 int uthread_yield(void)
 {
+
         // TODO
 }
 
@@ -152,6 +170,7 @@ int uthread_resume(int tid)
 
 int uthread_self()
 {
+  return cur_thread->getId();
         // TODO
 }
 

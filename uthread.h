@@ -11,14 +11,17 @@
 
 /* Initialize the thread library */
 // Return 0 on success, -1 on failure
+// GET DONE
 int uthread_init(int quantum_usecs);
 
 /* Create a new thread whose entry point is f */
 // Return new thread ID on success, -1 on failure
+// GET DONE
 int uthread_create(void* (*start_routine)(void*), void* arg);
 
 /* Join a thread */
 // Return 0 on success, -1 on failure
+// GET DONE
 int uthread_join(int tid, void **retval);
 
 /* yield */
