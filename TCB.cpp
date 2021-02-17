@@ -3,12 +3,18 @@
 TCB::TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state)
 {
 	_tid = tid;
-	//What do we do with second and third parameters lol
 	_state = state;
 	char _stack[STACK_SIZE]; // im p sure this isnt how this works -- or should this just be the stack pointer?
 	_quantum = 1; //how to get this from uthread.cpp -> quantum_usecs
-	//_context = getcontext(); leave uninitialized?
 	
+	//From demo.cpp
+	getcontext(&_context);
+	_context.uc_stack.ss_sp = new char[STACK_SIZE];
+    _context.uc_stack.ss_size = STACK_SIZE;
+    _context.uc_stack.ss_flags = 0;
+    
+    makecontext(&_context, (void(*)())stub, 2, start_routine, arg);
+
 	/* Need to init the following
 	----int _tid;---------------// The thread id number.--
 	----int _quantum;           // The time interval, as explained in the pdf.--
@@ -39,7 +45,7 @@ int TCB::getId() const
 
 void TCB::increaseQuantum()
 {
-	//idk lol
+	_quantum++;
 }
 
 int TCB::getQuantum() const
@@ -49,7 +55,7 @@ int TCB::getQuantum() const
 
 int TCB::saveContext()
 {
-	return getcontext(&_context);
+	getcontext(&_context);
 }
 
 void TCB::loadContext()
