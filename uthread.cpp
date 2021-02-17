@@ -1,7 +1,8 @@
 #include "uthread.h"
-#include "TCB.h"
+// #include "TCB.h"
 #include <cassert>
 #include <deque>
+
 
 using namespace std;
 
@@ -32,6 +33,15 @@ static deque<TCB*> ready_queue;
 static deque<TCB*> block_queue;
 static deque<TCB*> finish_queue;
 
+int getsize() {
+  return ready_queue.size();
+}
+
+deque<TCB*> getQueue() {
+  return ready_queue;
+}
+
+
 void get_length() {
   cout << "size" << endl;
   cout << ready_queue.size() << endl;
@@ -43,7 +53,7 @@ static int cur_ID = 0;
 
 // track current thread
 
-static TCB* cur_thread;
+TCB* cur_thread;
 
 // Interrupt Management --------------------------------------------------------
 
@@ -53,9 +63,10 @@ static void startInterruptTimer()
 	struct itimerval new_value;
 	new_value.it_value.tv_sec = 0;
 	new_value.it_interval.tv_sec = 0;
-	new_value.it_value.tv_usec = 1000; //quantum_usecs somehow?
-	new_value.it_interval.tv_usec = 1000; //quantum_usecs somehow?
-	setitimer(ITIMER_VIRTUAL, &new_value, NULL);
+	new_value.it_value.tv_usec = 1000000; //quantum_usecs somehow?
+	new_value.it_interval.tv_usec = 1000000; //quantum_usecs somehow?
+	setitimer(ITIMER_REAL, &new_value, NULL);
+  cout << "timer is ticking? " << endl;
 }
 
 // Block signals from firing timer interrupt
@@ -128,10 +139,28 @@ static void switchThreads()
       return;
     }
     addToReadyQueue(cur_thread);
+    cout << "switching threads and size is " << getsize() << endl;
+
+    // cout << "state of deque " << endl;
+    // for (int i = 0; i < ready_queue.size(); i++)
+    //     std::cout << ready_queue[i]->getId() <<  " ";
+    // std::cout << '\n';
 
     TCB * next = popFromReadyQueue();
-    next->loadContext();
-    cur_thread = next;
+    int id = next->getId();
+    cout << "switched to " << id << endl;
+    if(id == 0) {
+      cout << "skipping 0" << endl;
+      cur_thread = next;
+      switchThreads();
+    }
+    else {
+      cur_thread = next;
+      next->loadContext();
+    }
+    // cur_thread = next;
+    // next->loadContext();
+
     // cout << "current id " << cur_thread->getId();
 
         // TODO
@@ -147,36 +176,38 @@ static void switchThreads()
 void stub(void *(*start_routine)(void *), void *arg)
 {
 	void* retval = start_routine(arg);
+  cout << "finishing stub" << endl;
   uthread_exit(retval);
 }
 
 void sighandler(int signo) {
   switch (signo) {
-    case SIGVTALRM:
+    case SIGALRM:
       cout << "fuck yourself" << endl;
+      // startInterruptTimer();
       uthread_yield();
+      // exit(3);
       break;
   }
 }
 
 int uthread_init(int quantum_usecs)
 {
+        cout << " something changed " << endl;
         TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, READY);
-        cur_ID += 1;
         cur_thread = new_thread;
-        addToReadyQueue(new_thread);
-        enableInterrupts();
-        startInterruptTimer();
+        // addToReadyQueue(new_thread);
+        // enableInterrupts();
+        // startInterruptTimer();
 
         struct sigaction act = {0};
 
         act.sa_handler = sighandler;
-        sigaction(SIGVTALRM, &act, NULL);
-        // act.sa_flags = SIGVTALRM;
-        // if (sigaction(SIGVTALRM, &act, NULL) == -1) {
-        //   cout << "fuck yourself" << endl;
-        // }
-
+        sigaction(SIGALRM, &act, NULL);
+        // alarm(1);
+        startInterruptTimer();
+        // sleep(3);
+        cout << "sleepy time " << endl;
         // Initialize any data structures
         // Setup timer interrupt and handler
         // Create a thread for the caller (main) thread
@@ -222,7 +253,25 @@ int uthread_yield(void)
 
 void uthread_exit(void *retval)
 {
-  cur_thread->setState(FINISHED);
+  if(getsize() > 0) {
+    TCB * temp = popFromReadyQueue();
+    // cout << "state of deque " << endl;
+    // for (int i = 0; i < ready_queue.size(); i++)
+    //     std::cout << ready_queue[i]->getId() <<  " ";
+    // std::cout << '\n';
+    if(temp->getId() == 0) {
+      cout << "we done" << endl;
+    }
+    else {
+      cur_thread = temp;
+      temp->loadContext();
+    }
+  }
+  else {
+    cout << "fuck off" << endl;
+    return;
+  }
+  // cur_thread->setState(FINISHED);
         // If this is the main thread, exit the program
         // Move any threads joined on this thread back to the ready queue
         // Move this thread to the finished queue

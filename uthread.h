@@ -1,5 +1,13 @@
+
+
 #ifndef _UTHREADS_H
 #define _UTHREADS_H
+
+class TCB;
+TCB * popFromReadyQueue();
+
+
+#include "TCB.h"
 
 /*
  * User-Level Threads Library (uthreads)
@@ -9,6 +17,8 @@
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
 
+
+int getsize();
 /* Initialize the thread library */
 // Return 0 on success, -1 on failure
 // GET DONE

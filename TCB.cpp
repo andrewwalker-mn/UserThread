@@ -7,6 +7,7 @@ TCB::TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state)
 	char _stack[STACK_SIZE]; // im p sure this isnt how this works -- or should this just be the stack pointer?
 	_quantum = 1; //how to get this from uthread.cpp -> quantum_usecs
 
+	std::cout << "initializing " << _tid <<  std::endl;
 	//From demo.cpp
 	getcontext(&_context);
 	_context.uc_stack.ss_sp = new char[STACK_SIZE];
