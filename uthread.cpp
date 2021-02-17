@@ -44,19 +44,35 @@ static TCB* cur_thread;
 // Start a countdown timer to fire an interrupt
 static void startInterruptTimer()
 {
-        // TODO
+	struct itimerval new_value;
+	new_value.it_value.tv_sec = 0;
+	new_value.it_interval.tv_sec = 0;
+	new_value.it_value.tv_usec = 1000; //quantum_usecs somehow?
+	new_value.it_interval.tv_usec = 1000; //quantum_usecs somehow?
+	setitimer(ITIMER_VIRTUAL, &new_value, NULL);
 }
 
 // Block signals from firing timer interrupt
 static void disableInterrupts()
 {
-        // TODO
+	sigset_t disabledInterrupts;
+	sigset_t *disabledInterrupts_p;
+	
+	disabledInterrupts_p = &disabledInterrupts;
+	sigemptyset(disabledInterrupts_p);
+	sigaddset(disabledInterrupts_p, SIGVTALRM);
+	sigprocmask(SIG_SETMASK, disabledInterrupts_p, NULL);
 }
 
 // Unblock signals to re-enable timer interrupt
 static void enableInterrupts()
 {
-        // TODO
+    sigset_t disabledInterrupts;
+	sigset_t *disabledInterrupts_p;
+	
+	disabledInterrupts_p = &disabledInterrupts;
+	sigemptyset(disabledInterrupts_p);
+	sigprocmask(SIG_SETMASK, disabledInterrupts_p, NULL);
 }
 
 
@@ -113,7 +129,7 @@ static void switchThreads()
 // Starting point for thread. Calls top-level thread function
 void stub(void *(*start_routine)(void *), void *arg)
 {
-        // TODO
+	start_routine(arg);
 }
 
 int uthread_init(int quantum_usecs)
@@ -132,7 +148,7 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
 {
   // Create a new thread and add it to the ready queue
   cur_ID += 1;
-  TCB *new_thread = new TCB(cur_ID, (*start_routine)(void*), arg, READY);
+  TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
   addToReadyQueue(new_thread);
   return cur_ID;
 }
