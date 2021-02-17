@@ -14,7 +14,8 @@
 
 extern void stub(void *(*start_routine)(void *), void *arg);
 
-enum State {READY, RUNNING, BLOCK};
+enum State {READY, RUNNING, BLOCK, FINISHED};
+
 
 /*
  * The thread
@@ -32,7 +33,7 @@ public:
 	 * @param state current state for the new thread
 	 */
 	TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state);
-	
+
 	/**
 	 * thread d-tor
 	 */
@@ -43,24 +44,24 @@ public:
 	 * @param state the new state for our thread
 	 */
 	void setState(State state);
-	
+
 	/**
 	 * function that get the state of the thread
 	 * @return the current state of the thread
 	 */
 	State getState() const;
-	
+
 	/**
 	 * function that get the ID of the thread
-	 * @return the ID of the thread 
+	 * @return the ID of the thread
 	 */
 	int getId() const;
-	
+
 	/**
 	 * function to increase the quantum of the thread
 	 */
 	void increaseQuantum();
-	
+
 	/**
 	 * function that get the quantum of the thread
 	 * @return the current quantum of the thread

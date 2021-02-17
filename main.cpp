@@ -3,7 +3,10 @@
 
 using namespace std;
 
+void get_length();
+
 void *worker(void *arg) {
+    cout << "fucketh u" << endl;
     int my_tid = uthread_self();
     int points_per_thread = *(int*)arg;
 
@@ -48,9 +51,13 @@ int main(int argc, char *argv[]) {
 
     srand(time(NULL));
 
+    cout << thread_count << endl;
+
     // Create threads
     for (int i = 0; i < thread_count; i++) {
         int tid = uthread_create(worker, &points_per_thread);
+        get_length();
+        // cout << "testsdfsdfsdfsdfsdfdsfsdf" << endl;
         threads[i] = tid;
     }
 
@@ -59,13 +66,14 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < thread_count; i++) {
         // Add thread result to global total
         unsigned long *local_cnt;
+        cout << "test" << endl;
         uthread_join(threads[i], (void**)&local_cnt);
         g_cnt += *local_cnt;
 
         // Deallocate thread result
         //delete local_cnt;
     }
-
+    cout << "after" << endl;
     delete[] threads;
 
     cout << "Pi: " << (4. * (double)g_cnt) / ((double)points_per_thread * thread_count) << endl;

@@ -32,6 +32,12 @@ static deque<TCB*> ready_queue;
 static deque<TCB*> block_queue;
 static deque<TCB*> finish_queue;
 
+void get_length() {
+  cout << "size" << endl;
+  cout << ready_queue.size() << endl;
+  // cout << "asdfsdfsdfsd" << endl;
+}
+
 // thread ID
 static int cur_ID = 0;
 
@@ -57,7 +63,7 @@ static void disableInterrupts()
 {
 	sigset_t disabledInterrupts;
 	sigset_t *disabledInterrupts_p;
-	
+
 	disabledInterrupts_p = &disabledInterrupts;
 	sigemptyset(disabledInterrupts_p);
 	sigaddset(disabledInterrupts_p, SIGVTALRM);
@@ -67,9 +73,9 @@ static void disableInterrupts()
 // Unblock signals to re-enable timer interrupt
 static void enableInterrupts()
 {
-    sigset_t disabledInterrupts;
+  sigset_t disabledInterrupts;
 	sigset_t *disabledInterrupts_p;
-	
+
 	disabledInterrupts_p = &disabledInterrupts;
 	sigemptyset(disabledInterrupts_p);
 	sigprocmask(SIG_SETMASK, disabledInterrupts_p, NULL);
@@ -117,6 +123,17 @@ int removeFromReadyQueue(int tid)
 // Switch to the next ready thread
 static void switchThreads()
 {
+    int ret_val = cur_thread->saveContext();
+    if(ret_val == -1) {
+      return;
+    }
+    addToReadyQueue(cur_thread);
+
+    TCB * next = popFromReadyQueue();
+    next->loadContext();
+    cur_thread = next;
+    // cout << "current id " << cur_thread->getId();
+
         // TODO
 }
 
@@ -129,14 +146,36 @@ static void switchThreads()
 // Starting point for thread. Calls top-level thread function
 void stub(void *(*start_routine)(void *), void *arg)
 {
-	start_routine(arg);
+	void* retval = start_routine(arg);
+  uthread_exit(retval);
+}
+
+void sighandler(int signo) {
+  switch (signo) {
+    case SIGVTALRM:
+      cout << "fuck yourself" << endl;
+      uthread_yield();
+      break;
+  }
 }
 
 int uthread_init(int quantum_usecs)
 {
         TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, READY);
         cur_ID += 1;
+        cur_thread = new_thread;
         addToReadyQueue(new_thread);
+        enableInterrupts();
+        startInterruptTimer();
+
+        struct sigaction act = {0};
+
+        act.sa_handler = sighandler;
+        sigaction(SIGVTALRM, &act, NULL);
+        // act.sa_flags = SIGVTALRM;
+        // if (sigaction(SIGVTALRM, &act, NULL) == -1) {
+        //   cout << "fuck yourself" << endl;
+        // }
 
         // Initialize any data structures
         // Setup timer interrupt and handler
@@ -147,14 +186,26 @@ int uthread_init(int quantum_usecs)
 int uthread_create(void* (*start_routine)(void*), void* arg)
 {
   // Create a new thread and add it to the ready queue
+  //disableInterrupts();
   cur_ID += 1;
   TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
   addToReadyQueue(new_thread);
+  //enableInterrupts();
+  // new_thread->loadContext();
   return cur_ID;
 }
 
 int uthread_join(int tid, void **retval)
 {
+
+  while(cur_thread->getState() != FINISHED) {
+    cout << "huh";
+  }
+  cout << "outofwhilelop" << endl;
+  retval = (void**) 1;
+  uthread_yield();
+
+
         // If the thread specified by tid is already terminated, just return
         // If the thread specified by tid is still running, block until it terminates
         // Set *retval to be the result of thread if retval != nullptr
@@ -162,12 +213,16 @@ int uthread_join(int tid, void **retval)
 
 int uthread_yield(void)
 {
-
+    //disableInterrupts();
+    switchThreads();
+    //enableInterrupts();
+  // sigaction activates switch through
         // TODO
 }
 
 void uthread_exit(void *retval)
 {
+  cur_thread->setState(FINISHED);
         // If this is the main thread, exit the program
         // Move any threads joined on this thread back to the ready queue
         // Move this thread to the finished queue
