@@ -30,28 +30,33 @@ typedef struct join_queue_entry {
 
 // Queues
 static deque<TCB*> ready_queue;
+
+// not used for now, will be used in the future
 static deque<TCB*> block_queue;
 static deque<TCB*> finish_queue;
 
+// small helper function for error checking
 int getsize() {
   return ready_queue.size();
 }
 
+// helper function just to test things out - won't be used later
 deque<TCB*> getQueue() {
   return ready_queue;
 }
 
-
+// another helper function for testing
 void get_length() {
   cout << "size" << endl;
   cout << ready_queue.size() << endl;
 }
 
 // thread ID
+// is incremented every time a new thread is created, so that each thread ID is unique
 static int cur_ID = 0;
 
 // track current thread
-
+// makes it easy to work with the current  thread and its parameters
 TCB* cur_thread;
 
 // Interrupt Management --------------------------------------------------------
@@ -133,13 +138,16 @@ int removeFromReadyQueue(int tid)
 // Switch to the next ready thread
 static void switchThreads()
 {
+    // save current thread context
     int ret_val = cur_thread->saveContext();
     if(ret_val == -1) {
       return;
     }
+    // push current thread to queue
     addToReadyQueue(cur_thread);
     cout << "switching threads; queue size is " << getsize() << endl;
 
+    // get the next thread from queue
     TCB * next = popFromReadyQueue();
     int id = next->getId();
     cout << "switched to " << id << endl;
@@ -200,15 +208,17 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
   cur_ID += 1;
   TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
   addToReadyQueue(new_thread);
-  
+
   return cur_ID;
 }
 
+
+// not functional yet
 int uthread_join(int tid, void **retval)
 {
 
   while(cur_thread->getState() != FINISHED) {
-    
+
   }
   cout << "finished" << endl;
   retval = (void**) 1;
@@ -233,28 +243,15 @@ void uthread_exit(void *retval)
 {
   if(getsize() > 0) {
     TCB * temp = popFromReadyQueue();
-    // cout << "state of deque " << endl;
-    // for (int i = 0; i < ready_queue.size(); i++)
-    //     std::cout << ready_queue[i]->getId() <<  " ";
-    // std::cout << '\n';
-    	  cout << "thread exited. tid " << temp->getId() << endl;
+    cout << "thread exited. tid " << temp->getId() << endl;
 
     if(temp->getId() == 0) {
       cout << "main thread done" << endl;
     }
     else {
-	//~ if (temp->getId() == 1) {
-		//~ disableInterrupts();
-		//~ cout << "11111111111111disabled1111111111111111" << endl;
-	//~ }
-    //~ if (temp->getId() > -1) {
-		
-		//~ cout << "1111111111111enabled11111111111111111" << endl;
-
-	//~ }
-	  cout << "exited. tid " << temp->getId() << endl;
-      cur_thread = temp;
-      temp->loadContext();
+	     cout << "exited. tid " << temp->getId() << endl;
+       cur_thread = temp;
+       temp->loadContext();
     }
   }
   else {
