@@ -6,7 +6,6 @@ using namespace std;
 void get_length();
 
 void *worker(void *arg) {
-    cout << "fucketh u" << endl;
     int my_tid = uthread_self();
     int points_per_thread = *(int*)arg;
 
@@ -27,7 +26,7 @@ void *worker(void *arg) {
 
 int main(int argc, char *argv[]) {
     // Default to 1 ms time quantum
-    int quantum_usecs = 1000;
+    int quantum_usecs = 1;
 
     if (argc < 3) {
         cerr << "Usage: ./pi <total points> <threads> [quantum_usecs]" << endl;
@@ -51,29 +50,25 @@ int main(int argc, char *argv[]) {
 
     srand(time(NULL));
 
-    cout << thread_count << endl;
-
     // Create threads
     for (int i = 0; i < thread_count; i++) {
         int tid = uthread_create(worker, &points_per_thread);
         get_length();
-        // cout << "testsdfsdfsdfsdfsdfdsfsdf" << endl;
         threads[i] = tid;
     }
+    cout << "threads created" << endl;
 
     // Wait for all threads to complete
     unsigned long g_cnt = 0;
     for (int i = 0; i < thread_count; i++) {
         // Add thread result to global total
         unsigned long *local_cnt;
-        cout << "test" << endl;
         uthread_join(threads[i], (void**)&local_cnt);
         g_cnt += *local_cnt;
 
         // Deallocate thread result
         //delete local_cnt;
     }
-    cout << "after" << endl;
     delete[] threads;
 
     cout << "Pi: " << (4. * (double)g_cnt) / ((double)points_per_thread * thread_count) << endl;

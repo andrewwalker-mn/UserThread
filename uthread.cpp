@@ -58,19 +58,19 @@ TCB* cur_thread;
 // Interrupt Management --------------------------------------------------------
 
 // Start a countdown timer to fire an interrupt
-static void startInterruptTimer()
+void startInterruptTimer() //used to be static
 {
 	struct itimerval new_value;
 	new_value.it_value.tv_sec = 0;
 	new_value.it_interval.tv_sec = 0;
-	new_value.it_value.tv_usec = 1000000; //quantum_usecs somehow?
-	new_value.it_interval.tv_usec = 1000000; //quantum_usecs somehow?
-	setitimer(ITIMER_REAL, &new_value, NULL);
-  cout << "timer is ticking? " << endl;
+	new_value.it_value.tv_usec = 10; //quantum_usecs somehow?
+	new_value.it_interval.tv_usec = 10; //quantum_usecs somehow?
+	setitimer(ITIMER_VIRTUAL, &new_value, NULL);
+  cout << "timer is ticking" << endl;
 }
 
 // Block signals from firing timer interrupt
-static void disableInterrupts()
+void disableInterrupts() //used to be static
 {
 	sigset_t disabledInterrupts;
 	sigset_t *disabledInterrupts_p;
@@ -82,7 +82,7 @@ static void disableInterrupts()
 }
 
 // Unblock signals to re-enable timer interrupt
-static void enableInterrupts()
+void enableInterrupts() //used to be static
 {
   sigset_t disabledInterrupts;
 	sigset_t *disabledInterrupts_p;
@@ -149,7 +149,7 @@ static void switchThreads()
     TCB * next = popFromReadyQueue();
     int id = next->getId();
     cout << "switched to " << id << endl;
-    if(id == 0) {
+    if(id == 0) { //I think we can/should reimplement this part with join
       cout << "skipping 0" << endl;
       cur_thread = next;
       switchThreads();
@@ -182,7 +182,7 @@ void stub(void *(*start_routine)(void *), void *arg)
 
 void sighandler(int signo) {
   switch (signo) {
-    case SIGALRM:
+    case SIGVTALRM:
       cout << "fuck yourself" << endl;
       // startInterruptTimer();
       uthread_yield();
@@ -203,11 +203,28 @@ int uthread_init(int quantum_usecs)
         struct sigaction act = {0};
 
         act.sa_handler = sighandler;
-        sigaction(SIGALRM, &act, NULL);
+        sigaction(SIGVTALRM, &act, NULL);
         // alarm(1);
         startInterruptTimer();
-        // sleep(3);
-        cout << "sleepy time " << endl;
+        		enableInterrupts();
+
+        //~ disableInterrupts();
+        
+        //~ int j = 1;
+        //~ for (int i=1; i<1000000; i++) {
+      //~ // usleep(1000);
+      //~ usleep(100000);
+      //~ j = (j * j) % 13331;
+      //~ j = (j * j) % 13331;
+      //~ j = (j * j) % 13331;
+     
+	//~ if (i%500==0) {
+		//~ cout << "init" << i/500 << " being printed" << endl;
+		//~ }
+
+      //~ // uthread_yield();
+    //~ }
+    
         // Initialize any data structures
         // Setup timer interrupt and handler
         // Create a thread for the caller (main) thread
@@ -217,12 +234,13 @@ int uthread_init(int quantum_usecs)
 int uthread_create(void* (*start_routine)(void*), void* arg)
 {
   // Create a new thread and add it to the ready queue
-  //disableInterrupts();
+  //~ disableInterrupts();
   cur_ID += 1;
   TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
   addToReadyQueue(new_thread);
-  //enableInterrupts();
+  //~ enableInterrupts();
   // new_thread->loadContext();
+  
   return cur_ID;
 }
 
@@ -230,9 +248,9 @@ int uthread_join(int tid, void **retval)
 {
 
   while(cur_thread->getState() != FINISHED) {
-    cout << "huh";
+    
   }
-  cout << "outofwhilelop" << endl;
+  cout << "finished" << endl;
   retval = (void**) 1;
   uthread_yield();
 
@@ -259,10 +277,22 @@ void uthread_exit(void *retval)
     // for (int i = 0; i < ready_queue.size(); i++)
     //     std::cout << ready_queue[i]->getId() <<  " ";
     // std::cout << '\n';
+    	  cout << "exited. tid " << temp->getId() << endl;
+
     if(temp->getId() == 0) {
       cout << "we done" << endl;
     }
     else {
+	//~ if (temp->getId() == 1) {
+		//~ disableInterrupts();
+		//~ cout << "11111111111111disabled1111111111111111" << endl;
+	//~ }
+    //~ if (temp->getId() > -1) {
+		
+		//~ cout << "1111111111111enabled11111111111111111" << endl;
+
+	//~ }
+	  cout << "exited. tid " << temp->getId() << endl;
       cur_thread = temp;
       temp->loadContext();
     }
