@@ -45,7 +45,6 @@ deque<TCB*> getQueue() {
 void get_length() {
   cout << "size" << endl;
   cout << ready_queue.size() << endl;
-  // cout << "asdfsdfsdfsd" << endl;
 }
 
 // thread ID
@@ -139,12 +138,7 @@ static void switchThreads()
       return;
     }
     addToReadyQueue(cur_thread);
-    cout << "switching threads and size is " << getsize() << endl;
-
-    // cout << "state of deque " << endl;
-    // for (int i = 0; i < ready_queue.size(); i++)
-    //     std::cout << ready_queue[i]->getId() <<  " ";
-    // std::cout << '\n';
+    cout << "switching threads; queue size is " << getsize() << endl;
 
     TCB * next = popFromReadyQueue();
     int id = next->getId();
@@ -158,12 +152,6 @@ static void switchThreads()
       cur_thread = next;
       next->loadContext();
     }
-    // cur_thread = next;
-    // next->loadContext();
-
-    // cout << "current id " << cur_thread->getId();
-
-        // TODO
 }
 
 
@@ -183,51 +171,25 @@ void stub(void *(*start_routine)(void *), void *arg)
 void sighandler(int signo) {
   switch (signo) {
     case SIGVTALRM:
-      cout << "fuck yourself" << endl;
-      // startInterruptTimer();
+      cout << "interrupt-and-yield" << endl;
       uthread_yield();
-      // exit(3);
       break;
   }
 }
 
 int uthread_init(int quantum_usecs)
 {
-        cout << " something changed " << endl;
+        cout << "initializing" << endl;
         TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, READY);
         cur_thread = new_thread;
-        // addToReadyQueue(new_thread);
-        // enableInterrupts();
-        // startInterruptTimer();
 
         struct sigaction act = {0};
-
         act.sa_handler = sighandler;
         sigaction(SIGVTALRM, &act, NULL);
-        // alarm(1);
+
         startInterruptTimer();
-        		enableInterrupts();
+        enableInterrupts();
 
-        //~ disableInterrupts();
-        
-        //~ int j = 1;
-        //~ for (int i=1; i<1000000; i++) {
-      //~ // usleep(1000);
-      //~ usleep(100000);
-      //~ j = (j * j) % 13331;
-      //~ j = (j * j) % 13331;
-      //~ j = (j * j) % 13331;
-     
-	//~ if (i%500==0) {
-		//~ cout << "init" << i/500 << " being printed" << endl;
-		//~ }
-
-      //~ // uthread_yield();
-    //~ }
-    
-        // Initialize any data structures
-        // Setup timer interrupt and handler
-        // Create a thread for the caller (main) thread
         return 0;
 }
 
@@ -238,8 +200,6 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
   cur_ID += 1;
   TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
   addToReadyQueue(new_thread);
-  //~ enableInterrupts();
-  // new_thread->loadContext();
   
   return cur_ID;
 }
@@ -277,10 +237,10 @@ void uthread_exit(void *retval)
     // for (int i = 0; i < ready_queue.size(); i++)
     //     std::cout << ready_queue[i]->getId() <<  " ";
     // std::cout << '\n';
-    	  cout << "exited. tid " << temp->getId() << endl;
+    	  cout << "thread exited. tid " << temp->getId() << endl;
 
     if(temp->getId() == 0) {
-      cout << "we done" << endl;
+      cout << "main thread done" << endl;
     }
     else {
 	//~ if (temp->getId() == 1) {
@@ -298,7 +258,7 @@ void uthread_exit(void *retval)
     }
   }
   else {
-    cout << "fuck off" << endl;
+    cout << "this should never happen. uthread_exit" << endl;
     return;
   }
   // cur_thread->setState(FINISHED);

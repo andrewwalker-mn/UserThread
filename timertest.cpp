@@ -8,7 +8,7 @@ using namespace std;
 void sigvtalrmhandler(int signo) {
   switch (signo) {
     case SIGVTALRM:
-      cout << endl << "alarm ring" << endl;
+      cout << "alarm ring" << endl;
       break;
   }
 }
@@ -26,8 +26,7 @@ int main(int argc, char *argv[]) {
   
 	int j=1;
 	for (int i=1; i<8000000; i++) {
-      // usleep(1000);
-      //~ usleep(100000);
+
       j = (j * j) % 13331;
       j = (j * j) % 13331;
       j = (j * j) % 13331;

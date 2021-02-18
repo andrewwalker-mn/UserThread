@@ -1,1 +1,10 @@
-Run solution for main.cpp: ./uthread-solution-exe 100000000 8
+David Ma (maxxx818) and Andrew Walker (walk0655)
+Tests:
+
+make normtest
+Tests uthread_init, uthread_create, and uthread_yield
+-Initializes the main thread, creates some worker threads, and yields them over time with the timer interrupt.  
+
+make timertest
+Tests timer setup, along with toggling timer interrupts
+-Shows timer functionality, along with enabling and disabling timer signals.
