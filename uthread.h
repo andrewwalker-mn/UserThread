@@ -66,4 +66,7 @@ void startInterruptTimer(); //used to not be here
 void disableInterrupts(); //used to not be here
 void enableInterrupts(); //used to not be here
 
+TCB* getThread(int tid);
+
+
 #endif

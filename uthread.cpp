@@ -133,6 +133,77 @@ int removeFromReadyQueue(int tid)
         return -1;
 }
 
+void addToQueue(TCB *tcb, State state)
+{
+	switch (state) {
+		case READY:
+			ready_queue.push_back(tcb);
+			break;
+		case BLOCK:
+			block_queue.push_back(tcb);
+			break;
+		case FINISHED:
+			finish_queue.push_back(tcb);
+			break;
+		default:
+			assert(false);
+	}
+}
+
+TCB* popFromQueue(State state) {
+	TCB *head;
+	switch (state) {
+		case READY:
+			assert(!ready_queue.empty());
+			head = ready_queue.front();
+			ready_queue.pop_front();
+			return head;
+			break;
+		case BLOCK:
+			assert(!block_queue.empty());
+			head = block_queue.front();
+			block_queue.pop_front();
+			return head;
+			break;
+		case FINISHED:
+			assert(!finish_queue.empty());
+			head = finish_queue.front();
+			finish_queue.pop_front();
+			return head;
+			break;
+		default:
+			assert(false);
+	}
+}
+
+TCB* getThread(int tid)
+{
+	 for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
+        {
+                if (tid == (*iter)->getId())
+                {
+                        return *iter;
+                }
+        }
+      for (deque<TCB*>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
+        {
+                if (tid == (*iter)->getId())
+                {
+                        return *iter;
+                }
+        }
+      for (deque<TCB*>::iterator iter = finish_queue.begin(); iter != finish_queue.end(); ++iter)
+        {
+                if (tid == (*iter)->getId())
+                {
+                        return *iter;
+                }
+        }        
+
+        // Thread not found
+        return nullptr;
+}
+
 // Helper functions ------------------------------------------------------------
 
 // Switch to the next ready thread
