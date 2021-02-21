@@ -139,10 +139,17 @@ int removeFromReadyQueue(int tid)
 static void switchThreads()
 {
     // save current thread context
-    int ret_val = cur_thread->saveContext();
+    // int ret_val = cur_thread->saveContext();
+    volatile int flag = 0;
+    int ret_val = getcontext(&cur_thread->_context);
     if(ret_val == -1) {
       return;
     }
+    if (flag == 1) {
+      return;
+    }
+
+    flag = 1;
     // push current thread to queue
     addToReadyQueue(cur_thread);
     cout << "switching threads; queue size is " << getsize() << endl;
@@ -158,7 +165,8 @@ static void switchThreads()
     }
     else {
       cur_thread = next;
-      next->loadContext();
+      setcontext(&cur_thread->_context);
+      // next->loadContext();
     }
 }
 
@@ -251,7 +259,8 @@ void uthread_exit(void *retval)
     else {
 	     cout << "exited. tid " << temp->getId() << endl;
        cur_thread = temp;
-       temp->loadContext();
+       setcontext(&cur_thread->_context);
+       // temp->loadContext();
     }
   }
   else {
