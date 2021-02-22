@@ -23,18 +23,11 @@ TCB::TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state)
 
 	  makecontext(&_context, (void(*)())stub, 2, start_routine, arg);
 	}
-		// stub(start_routine, arg);
-	/* Need to init the following
-	----int _tid;---------------// The thread id number.--
-	----int _quantum;           // The time interval, as explained in the pdf.--
-	----State _state;-----------// The state of the thread--
-	----char* _stack;-----------// The thread's stack--
-    ucontext_t _context;    // The thread's saved context
-	 */
 }
 
 TCB::~TCB()
 {
+  // nothing should be explicitly deleted in the destructor here
 }
 
 void TCB::setState(State state)
