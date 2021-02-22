@@ -43,15 +43,15 @@ int getsize() {
 }
 
 // helper function just to test things out - won't be used later
-deque<TCB*> getQueue() {
-  return ready_queue;
-}
+//deque<TCB*> getQueue() {
+//  return ready_queue;
+//}
 
 // another helper function for testing
-void get_length() {
-  cout << "size" << endl;
-  cout << ready_queue.size() << endl;
-}
+// void get_length() {
+//  cout << "size" << endl;
+//  cout << ready_queue.size() << endl;
+//}
 
 // thread ID
 // is incremented every time a new thread is created, so that each thread ID is unique
@@ -111,7 +111,7 @@ void addToReadyQueue(TCB *tcb)
 // NOTE: Assumes at least one thread on the ready queue
 TCB* popFromReadyQueue()
 {
-        assert(!ready_queue.empty());
+        //assert(!ready_queue.empty());
 
         TCB *ready_queue_head = ready_queue.front();
         ready_queue.pop_front();
@@ -321,8 +321,6 @@ static void switchThreads()
       cur_thread->setState(READY);
       addToReadyQueue(cur_thread);
     }
-
-    // cout << "switching threads; queue size is " << getsize() << endl;
 
     // get the next thread from queue
     TCB * next = popFromReadyQueue();

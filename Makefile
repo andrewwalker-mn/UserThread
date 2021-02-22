@@ -28,4 +28,4 @@ suspendtest: $(OBJ4)
 .PHONY: clean
 
 clean:
-	rm -f uthread-demo timertest normtest yaya *.o
+	rm -f uthread-demo timertest normtest yaya queuetest *.o

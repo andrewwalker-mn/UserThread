@@ -5,11 +5,10 @@ TCB::TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state)
 	_tid = tid;
 	_state = state;
 	char _stack[STACK_SIZE]; // im p sure this isnt how this works -- or should this just be the stack pointer?
-	_quantum = 1; //how to get this from uthread.cpp -> quantum_usecs
+	_quantum = 0; //how to get this from uthread.cpp -> quantum_usecs
 
 	std::cout << "initializing " << _tid <<  std::endl;
 	//From demo.cpp
-
 	if (start_routine == nullptr) {
 		getcontext(&_context);
 		_context.uc_stack.ss_sp = new char[STACK_SIZE];
@@ -24,7 +23,6 @@ TCB::TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state)
 
 	    makecontext(&_context, (void(*)())stub, 2, start_routine, arg);
 	}
-
 		// stub(start_routine, arg);
 	/* Need to init the following
 	----int _tid;---------------// The thread id number.--
