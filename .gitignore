@@ -3,3 +3,4 @@ normtest
 timertest
 queuetest
 uthread-demo
+suspendtest
