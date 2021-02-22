@@ -20,6 +20,7 @@ using namespace std;
 
 // You will need to maintain structures to track the state of threads
 // - uthread library functions refer to threads by their TID so you will want
+
 //   to be able to access a TCB given a thread ID
 // - Threads move between different states in their lifetime (READY, BLOCK,
 //   FINISH). You will want to maintain separate "queues" (doesn't have to
@@ -29,11 +30,12 @@ using namespace std;
 //   Example join and finished queue entry types are provided above
 
 // Queues
-static deque<TCB*> ready_queue;
+//~ static deque<TCB*> ready_queue;
 
-// not used for now, will be used in the future
-static deque<join_queue_entry_t> block_queue;
-static deque<finished_queue_entry_t> finished_queue;
+
+//~ // not used for now, will be used in the future
+//~ static deque<join_queue_entry_t> block_queue;
+//~ static deque<finished_queue_entry_t> finish_queue;
 
 // small helper function for error checking
 int getsize() {
@@ -233,6 +235,18 @@ bool isBlocked(int tid) {
         }
         return false;
 }
+
+join_queue_entry_t* getBlocked(int tid) {
+	for (deque<join_queue_entry_t>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
+        {
+                if (tid == (*iter).tcb->getId())
+                {
+                        return &(*iter);
+                }
+        }
+        return nullptr;
+}
+
 
 bool isFinished(int tid)
 {
