@@ -1,3 +1,5 @@
 *.o
 normtest
 timertest
+queuetest
+uthread-demo

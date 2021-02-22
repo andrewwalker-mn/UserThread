@@ -63,7 +63,7 @@ int uthread_get_total_quantums();
 // Return the thread quantum set count
 int uthread_get_quantums(int tid);
 
-void startInterruptTimer(); //used to not be here
+void startInterruptTimer(int quantum_usecs); //used to not be here
 void disableInterrupts(); //used to not be here
 void enableInterrupts(); //used to not be here
 

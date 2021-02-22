@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 	act.sa_handler = sigvtalrmhandler;
 	sigaction(SIGVTALRM, &act, NULL);
 	
-	startInterruptTimer();
+	startInterruptTimer(10);
 	
 	cout << "Should print numbers 1-10 interspersed with alarm rings, then disable alarm through 60 when it turns on again" << endl;
   
