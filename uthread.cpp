@@ -7,16 +7,16 @@
 using namespace std;
 
 // Finished queue entry type
-typedef struct finished_queue_entry {
-  TCB *tcb;             // Pointer to TCB
-  void *result;         // Pointer to thread result (output)
-} finished_queue_entry_t;
-
-// Join queue entry type
-typedef struct join_queue_entry {
-  TCB *tcb;             // Pointer to TCB
-  int waiting_for_tid;  // TID this thread is waiting on
-} join_queue_entry_t;
+// typedef struct finished_queue_entry {
+//   TCB *tcb;             // Pointer to TCB
+//   void *result;         // Pointer to thread result (output)
+// } finished_queue_entry_t;
+//
+// // Join queue entry type
+// typedef struct join_queue_entry {
+//   TCB *tcb;             // Pointer to TCB
+//   int waiting_for_tid;  // TID this thread is waiting on
+// } join_queue_entry_t;
 
 // You will need to maintain structures to track the state of threads
 // - uthread library functions refer to threads by their TID so you will want
@@ -33,7 +33,7 @@ static deque<TCB*> ready_queue;
 
 // not used for now, will be used in the future
 static deque<join_queue_entry_t> block_queue;
-static deque<finished_queue_entry_t> finish_queue;
+static deque<finished_queue_entry_t> finished_queue;
 
 // small helper function for error checking
 int getsize() {
@@ -384,7 +384,7 @@ int uthread_join(int tid, void **retval)
   if(isFinished(tid)) {
     finished_queue_entry_t* temp = getFinished(tid);
     *retval = temp->result;
-    return 1
+    return 1;
   }
   else {
     if(isReady(tid) || isBlocked(tid)) {
@@ -479,7 +479,7 @@ int uthread_suspend(int tid)
 {
   if(cur_thread->getId() == tid) {
     cur_thread->setState(BLOCK);
-    addToBlockQueue(cur_thread);
+    addToBlockQueue(cur_thread, -1);
     // trigger reschedule
     // reset time slice
     uthread_yield();
