@@ -222,7 +222,11 @@ static void switchThreads()
 
     flag = 1;
     // push current thread to queue
-    addToReadyQueue(cur_thread);
+    if (cur_thread->getState() == RUNNING) {
+      cur_thread->setState(READY);
+      addToReadyQueue(cur_thread);
+    }
+
     cout << "switching threads; queue size is " << getsize() << endl;
 
     // get the next thread from queue
@@ -236,6 +240,7 @@ static void switchThreads()
     }
     else {
       cur_thread = next;
+      cur_thread->setState(RUNNING);
       setcontext(&cur_thread->_context);
       // next->loadContext();
     }
@@ -267,7 +272,7 @@ void sighandler(int signo) {
 int uthread_init(int quantum_usecs)
 {
         cout << "initializing" << endl;
-        TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, READY);
+        TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, RUNNING);
         cur_thread = new_thread;
 
         struct sigaction act = {0};
@@ -295,7 +300,25 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
 // not functional yet
 int uthread_join(int tid, void **retval)
 {
-
+  if(isFinished(tid)) {
+    finished_queue_entry_t temp = getFinished(tid);
+    *retval = temp.result;
+    return 1
+  }
+  else {
+    if(isReady(tid) || isBlocked(tid)) {
+      cur_thread->setState(BLOCK);
+      join_queue_entry_t temp = {cur_thread, tid};
+      addToBlockQueue(temp);
+      uthread_yield();
+      finished_queue_entry_t temp2 = getFinished(tid);
+      *retval = temp2.result;
+      return 1;
+    }
+    else {
+      return -1;
+    }
+  }
   // TCB *new_thread = getThread(tid);
   // if (new_thread)
   // while is still running, block
@@ -328,28 +351,40 @@ int uthread_yield(void)
 
 void uthread_exit(void *retval)
 {
+  int cur_id = cur_thread->getId();
+  if(hasWaiter(cur_id)) {
+    join_queue_entry_t temp = getWaiter(cur_id);
+    TCB *blocked = temp.tcb;
+    removeFromBlockQueue(blocked->getId());
+    addToReadyQueue(blocked->getId());
+    blocked->setState(READY);
+  }
+  cur_thread->setState(FINISHED);
+  finished_queue_entry_t temp2 = {cur_thread, retval};
+  addToFinishedQueue(temp2);
+  uthread_yield();
   // check if there is a thread waiting on this one using curthread tid
   // if there's a thread waiting on this one, send it to the ready queue and yield control
   // send the current thread to the finished queue with its return values
   // yield control to the next thread in the ready queue
-  if(getsize() > 0) {
-    TCB * temp = popFromReadyQueue();
-    cout << "thread exited. tid " << temp->getId() << endl;
-
-    if(temp->getId() == 0) {
-      cout << "main thread done" << endl;
-    }
-    else {
-	     cout << "exited. tid " << temp->getId() << endl;
-       cur_thread = temp;
-       setcontext(&cur_thread->_context);
-       // temp->loadContext();
-    }
-  }
-  else {
-    cout << "this should never happen. uthread_exit" << endl;
-    return;
-  }
+  // if(getsize() > 0) {
+  //   TCB * temp = popFromReadyQueue();
+  //   // cout << "thread exited. tid " << temp->getId() << endl;
+  //
+  //   if(temp->getId() == 0) {
+  //     cout << "main thread done" << endl;
+  //   }
+  //   else {
+	//      cout << "exited. tid " << temp->getId() << endl;
+  //      cur_thread = temp;
+  //      setcontext(&cur_thread->_context);
+  //      // temp->loadContext();
+  //   }
+  // }
+  // else {
+  //   cout << "this should never happen. uthread_exit" << endl;
+  //   return;
+  // }
   // cur_thread->setState(FINISHED);
         // If this is the main thread, exit the program
         // Move any threads joined on this thread back to the ready queue
