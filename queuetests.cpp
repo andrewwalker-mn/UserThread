@@ -8,7 +8,7 @@ using namespace std;
 
 int main(int argc, char *argv[]) {
   TCB *tcb = new TCB(0, nullptr, nullptr, READY);
-  
+
   //~ Ready queue tests
   assert(isReady(0) == false);
   assert(getsize() == 0);
@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   addToBlockQueue(tcb, 1);
   assert(isBlocked(0));
   assert(hasWaiter(1));
-  
+
   join_queue_entry_t* entry1 = getWaiter(1);
   assert(entry1->tcb == tcb);
   assert(entry1->waiting_for_tid == 1);
@@ -51,9 +51,4 @@ int main(int argc, char *argv[]) {
   assert(entry2->tcb == tcb);
   assert(entry2->result == nullptr);
 
-  // Misc queue tests
-  //assert(getsize() == 0);
-//  assert(getQueue() == ready_queue);
-
-  
 }
