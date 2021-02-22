@@ -412,12 +412,12 @@ int uthread_join(int tid, void **retval)
     disableInterrupts();
     // if the specified thread has already terminated, just change retval accordingly.
     if(isFinished(tid)) {
-      finished_queue_entry_t* temp = getFinished(tid);
-      *retval = temp->result;
-      delete temp->tcb;
-      enableInterrupts();
-      return 0;
-    }
+    finished_queue_entry_t* temp = getFinished(tid);
+    *retval = temp->result;
+    delete temp->tcb;
+    enableInterrupts();
+    return 1;
+  }
     else {
       // if the specified thread is ready or is blocked, move the caller thread to the blocked queue
       // then yield control. When the caller thread is given control back - because the specified thread has terminated -
@@ -428,7 +428,8 @@ int uthread_join(int tid, void **retval)
         uthread_yield();
         finished_queue_entry_t* temp2 = getFinished(tid);
         *retval = temp2->result;
-        enableInterrupts();
+        delete temp2->tcb;
+	enableInterrupts();
         return 0;
       }
       // if the specified thread doesn't exist, error out
