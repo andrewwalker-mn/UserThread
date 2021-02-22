@@ -299,6 +299,23 @@ join_queue_entry_t* getWaiter(int tid)
         assert(false);
 }
 
+void showQueues() {
+  cout << "state of ready queue" << endl;
+  for (int i = 0; i < ready_queue.size(); i++)
+      std::cout << ready_queue[i]->getId() <<  " ";
+  std::cout << '\n';
+
+  cout << "state of block queue" << endl;
+  for (int i = 0; i < block_queue.size(); i++)
+      std::cout << block_queue[i].tcb->getId() <<  " ";
+  std::cout << '\n';
+
+  cout << "state of finish queue" << endl;
+  for (int i = 0; i < finished_queue.size(); i++)
+      std::cout << finished_queue[i].tcb->getId() <<  " ";
+  std::cout << '\n';
+}
+
 // Helper functions ------------------------------------------------------------
 
 // Switch to the next ready thread
@@ -403,8 +420,6 @@ int uthread_join(int tid, void **retval)
   else {
     if(isReady(tid) || isBlocked(tid)) {
       cur_thread->setState(BLOCK);
-      // join_queue_entry_t temp = {cur_thread, tid};
-
       addToBlockQueue(cur_thread, tid);
       uthread_yield();
       finished_queue_entry_t* temp2 = getFinished(tid);
@@ -415,21 +430,6 @@ int uthread_join(int tid, void **retval)
       return -1;
     }
   }
-  // TCB *new_thread = getThread(tid);
-  // if (new_thread)
-  // while is still running, block
-  // check to see if it's in the terminated queue. If it is, change retval accordingly and finish.
-  // if it's in the running queue, add the caller thread to the join queue and block
-  // once it finishes, add the caller thread to the ready queue so it can continue
-  // if already terminated, continue. after it terminates, continue.
-  // while(cur_thread->getState() != FINISHED) {
-  //
-  // }
-  // cout << "finished" << endl;
-  // void* ret = nullptr;// what is returned
-  // if (ret != nullptr) {
-  //   *retval = ret;
-  // }
   return 1;
         // If the thread specified by tid is already terminated, just return
         // If the thread specified by tid is still running, block until it terminates
@@ -438,11 +438,8 @@ int uthread_join(int tid, void **retval)
 
 int uthread_yield(void)
 {
-    //disableInterrupts();
     switchThreads();
-    //enableInterrupts();
-  // sigaction activates switch through
-        // TODO
+    return 1;
 }
 
 void uthread_exit(void *retval)
@@ -467,32 +464,6 @@ void uthread_exit(void *retval)
   else {
     cout << "we done for now!" << endl;
   }
-  // check if there is a thread waiting on this one using curthread tid
-  // if there's a thread waiting on this one, send it to the ready queue and yield control
-  // send the current thread to the finished queue with its return values
-  // yield control to the next thread in the ready queue
-  // if(getsize() > 0) {
-  //   TCB * temp = popFromReadyQueue();
-  //   // cout << "thread exited. tid " << temp->getId() << endl;
-  //
-  //   if(temp->getId() == 0) {
-  //     cout << "main thread done" << endl;
-  //   }
-  //   else {
-	//      cout << "exited. tid " << temp->getId() << endl;
-  //      cur_thread = temp;
-  //      setcontext(&cur_thread->_context);
-  //      // temp->loadContext();
-  //   }
-  // }
-  // else {
-  //   cout << "this should never happen. uthread_exit" << endl;
-  //   return;
-  // }
-  // cur_thread->setState(FINISHED);
-        // If this is the main thread, exit the program
-        // Move any threads joined on this thread back to the ready queue
-        // Move this thread to the finished queue
 }
 
 int uthread_suspend(int tid)
@@ -509,18 +480,8 @@ int uthread_suspend(int tid)
     removeFromReadyQueue(tid);
     thread->setState(BLOCK);
     addToBlockQueue(thread, -1);
-
-    cout << "state of ready queue" << endl;
-    for (int i = 0; i < ready_queue.size(); i++)
-        std::cout << ready_queue[i]->getId() <<  " ";
-    std::cout << '\n';
-
-    cout << "state of blocked queue" << endl;
-    for (int i = 0; i < block_queue.size(); i++)
-        std::cout << block_queue[i].tcb->getId() <<  " ";
-    std::cout << '\n';
-
   }
+  return 1;
   // TCB * thread =
         // Move the thread specified by tid from whatever state it is
         // in to the block queue
@@ -529,22 +490,12 @@ int uthread_suspend(int tid)
 int uthread_resume(int tid)
 {
   if(isBlocked(tid)) {
-    cout << "resuming tid" << tid << endl;
     join_queue_entry_t* blocked = getBlocked(tid);
     removeFromBlockQueue(tid);
     addToReadyQueue(blocked->tcb);
     blocked->tcb->setState(READY);
-
-    cout << "state of ready queue" << endl;
-    for (int i = 0; i < ready_queue.size(); i++)
-        std::cout << ready_queue[i]->getId() <<  " ";
-    std::cout << '\n';
-
-    cout << "state of blocked queue" << endl;
-    for (int i = 0; i < block_queue.size(); i++)
-        std::cout << block_queue[i].tcb->getId() <<  " ";
-    std::cout << '\n';
   }
+  return 1;
         // Move the thread specified by tid back to the ready queue
 }
 
@@ -556,10 +507,12 @@ int uthread_self()
 
 int uthread_get_total_quantums()
 {
+  return 1;
         // TODO
 }
 
 int uthread_get_quantums(int tid)
 {
+  return 1;
         // TODO
 }

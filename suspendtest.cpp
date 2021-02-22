@@ -6,10 +6,11 @@ using namespace std;
 void * worker(void * arg) {
   cout << "worker" << endl;
   uthread_suspend(2);
-  uthread_suspend(3);
+  showQueues();
   uthread_resume(2);
-  // uthread_resume(3);
+  showQueues();
   sleep(1);
+  return nullptr;
 }
 
 int main(int argc, char *argv[]) {
@@ -28,14 +29,11 @@ int main(int argc, char *argv[]) {
   }
   cout << "threads created" << endl;
 
+  showQueues();
+
   // Wait for all threads to complete
-  //     unsigned long *local_cnt;
-  //     uthread_join(threads[i], (void**)&local_cnt);
-  for (int i = 0; i < thread_count; i++) {
-      // Add thread result to global total
-      unsigned long *local_cnt;
-      uthread_join(threads[i], (void**)&local_cnt);
-  }
+  unsigned long *local_cnt;
+  uthread_join(1, (void**)&local_cnt);
 
   cout << "finished" << endl;
 
