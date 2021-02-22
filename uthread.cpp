@@ -32,8 +32,8 @@ typedef struct join_queue_entry {
 static deque<TCB*> ready_queue;
 
 // not used for now, will be used in the future
-static deque<TCB*> block_queue;
-static deque<TCB*> finish_queue;
+static deque<join_queue_entry_t> block_queue;
+static deque<finished_queue_entry_t> finish_queue;
 
 // small helper function for error checking
 int getsize() {
@@ -133,49 +133,49 @@ int removeFromReadyQueue(int tid)
         return -1;
 }
 
-void addToQueue(TCB *tcb, State state)
-{
-	switch (state) {
-		case READY:
-			ready_queue.push_back(tcb);
-			break;
-		case BLOCK:
-			block_queue.push_back(tcb);
-			break;
-		case FINISHED:
-			finish_queue.push_back(tcb);
-			break;
-		default:
-			assert(false);
-	}
-}
-
-TCB* popFromQueue(State state) {
-	TCB *head;
-	switch (state) {
-		case READY:
-			assert(!ready_queue.empty());
-			head = ready_queue.front();
-			ready_queue.pop_front();
-			return head;
-			break;
-		case BLOCK:
-			assert(!block_queue.empty());
-			head = block_queue.front();
-			block_queue.pop_front();
-			return head;
-			break;
-		case FINISHED:
-			assert(!finish_queue.empty());
-			head = finish_queue.front();
-			finish_queue.pop_front();
-			return head;
-			break;
-		default:
-			assert(false);
-	}
-}
-
+// void addToQueue(TCB *tcb, State state)
+// {
+// 	switch (state) {
+// 		case READY:
+// 			ready_queue.push_back(tcb);
+// 			break;
+// 		case BLOCK:
+// 			block_queue.push_back(tcb);
+// 			break;
+// 		case FINISHED:
+// 			finish_queue.push_back(tcb);
+// 			break;
+// 		default:
+// 			assert(false);
+// 	}
+// }
+//
+// TCB* popFromQueue(State state) {
+// 	TCB *head;
+// 	switch (state) {
+// 		case READY:
+// 			assert(!ready_queue.empty());
+// 			head = ready_queue.front();
+// 			ready_queue.pop_front();
+// 			return head;
+// 			break;
+// 		case BLOCK:
+// 			assert(!block_queue.empty());
+// 			head = block_queue.front();
+// 			block_queue.pop_front();
+// 			return head;
+// 			break;
+// 		case FINISHED:
+// 			assert(!finish_queue.empty());
+// 			head = finish_queue.front();
+// 			finish_queue.pop_front();
+// 			return head;
+// 			break;
+// 		default:
+// 			assert(false);
+// 	}
+// }
+//
 TCB* getThread(int tid)
 {
 	 for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
@@ -185,20 +185,20 @@ TCB* getThread(int tid)
                         return *iter;
                 }
         }
-      for (deque<TCB*>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
-        {
-                if (tid == (*iter)->getId())
-                {
-                        return *iter;
-                }
-        }
-      for (deque<TCB*>::iterator iter = finish_queue.begin(); iter != finish_queue.end(); ++iter)
-        {
-                if (tid == (*iter)->getId())
-                {
-                        return *iter;
-                }
-        }        
+      // for (deque<TCB*>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
+      //   {
+      //           if (tid == (*iter)->getId())
+      //           {
+      //                   return *iter;
+      //           }
+      //   }
+      // for (deque<TCB*>::iterator iter = finish_queue.begin(); iter != finish_queue.end(); ++iter)
+      //   {
+      //           if (tid == (*iter)->getId())
+      //           {
+      //                   return *iter;
+      //           }
+      //   }
 
         // Thread not found
         return nullptr;
@@ -296,14 +296,22 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
 int uthread_join(int tid, void **retval)
 {
 
-  while(cur_thread->getState() != FINISHED) {
-
-  }
-  cout << "finished" << endl;
-  retval = (void**) 1;
-  uthread_yield();
-
-
+  // TCB *new_thread = getThread(tid);
+  // if (new_thread)
+  // while is still running, block
+  // check to see if it's in the terminated queue. If it is, change retval accordingly and finish.
+  // if it's in the running queue, add the caller thread to the join queue and block
+  // once it finishes, add the caller thread to the ready queue so it can continue
+  // if already terminated, continue. after it terminates, continue.
+  // while(cur_thread->getState() != FINISHED) {
+  //
+  // }
+  // cout << "finished" << endl;
+  // void* ret = nullptr;// what is returned
+  // if (ret != nullptr) {
+  //   *retval = ret;
+  // }
+  return 1;
         // If the thread specified by tid is already terminated, just return
         // If the thread specified by tid is still running, block until it terminates
         // Set *retval to be the result of thread if retval != nullptr
@@ -320,6 +328,10 @@ int uthread_yield(void)
 
 void uthread_exit(void *retval)
 {
+  // check if there is a thread waiting on this one using curthread tid
+  // if there's a thread waiting on this one, send it to the ready queue and yield control
+  // send the current thread to the finished queue with its return values
+  // yield control to the next thread in the ready queue
   if(getsize() > 0) {
     TCB * temp = popFromReadyQueue();
     cout << "thread exited. tid " << temp->getId() << endl;
