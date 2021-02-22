@@ -61,11 +61,9 @@ int main(int argc, char *argv[]) {
 
   int test4 = 100;
   void * arg4 = &test4;
-  tid = uthread_create(longworker, arg4);
+  tid = uthread_create(longworker, arg4); 
 
-  cout << getThread(3)->getId() << endl;
-
-  //~ uthread_yield();
+  uthread_yield();
   
   return 0;
 

@@ -8,6 +8,7 @@ TCB * popFromReadyQueue();
 
 
 #include "TCB.h"
+#include <deque>
 
 /*
  * User-Level Threads Library (uthreads)
@@ -66,7 +67,36 @@ void startInterruptTimer(); //used to not be here
 void disableInterrupts(); //used to not be here
 void enableInterrupts(); //used to not be here
 
-TCB* getThread(int tid);
+typedef struct finished_queue_entry {
+  TCB *tcb;             // Pointer to TCB
+  void *result;         // Pointer to thread result (output)
+} finished_queue_entry_t;
 
+// Join queue entry type
+typedef struct join_queue_entry {
+  TCB *tcb;             // Pointer to TCB
+  int waiting_for_tid;  // TID this thread is waiting on
+} join_queue_entry_t;
+
+//~ static deque<TCB*> ready_queue;
+//~ static deque<join_queue_entry_t> block_queue;
+//~ static deque<finished_queue_entry_t> finished_queue;
+
+TCB* getThread(int tid);
+void addToReadyQueue(TCB *tcb);
+TCB* popFromReadyQueue();
+int removeFromReadyQueue(int tid);
+void addToBlockQueue(TCB *tcb, int waiting_for_tid);
+join_queue_entry_t popFromBlockQueue();
+int removeFromBlockQueue(int tid);
+void addToFinishedQueue(TCB *tcb, void *result);
+finished_queue_entry_t popFromFinishedQueue();
+int removeFromFinishedQueue(int tid);
+
+
+bool isFinished(int tid); //function to check if tid is in the finished queue
+finished_queue_entry_t getFinished(int tid);//" to get an element of the finished queue via its tid
+bool hasWaiter(int tid); //see if there is an entry in the block queue with waiter tid
+join_queue_entry_t getWaiter(int tid); //return the queue entry that is waiting on tid 
 
 #endif

@@ -6,17 +6,17 @@
 
 using namespace std;
 
-// Finished queue entry type
-typedef struct finished_queue_entry {
-  TCB *tcb;             // Pointer to TCB
-  void *result;         // Pointer to thread result (output)
-} finished_queue_entry_t;
+//~ // Finished queue entry type
+//~ typedef struct finished_queue_entry {
+  //~ TCB *tcb;             // Pointer to TCB
+  //~ void *result;         // Pointer to thread result (output)
+//~ } finished_queue_entry_t;
 
-// Join queue entry type
-typedef struct join_queue_entry {
-  TCB *tcb;             // Pointer to TCB
-  int waiting_for_tid;  // TID this thread is waiting on
-} join_queue_entry_t;
+//~ // Join queue entry type
+//~ typedef struct join_queue_entry {
+  //~ TCB *tcb;             // Pointer to TCB
+  //~ int waiting_for_tid;  // TID this thread is waiting on
+//~ } join_queue_entry_t;
 
 // You will need to maintain structures to track the state of threads
 // - uthread library functions refer to threads by their TID so you will want
@@ -33,7 +33,7 @@ static deque<TCB*> ready_queue;
 
 // not used for now, will be used in the future
 static deque<join_queue_entry_t> block_queue;
-static deque<finished_queue_entry_t> finish_queue;
+static deque<finished_queue_entry_t> finished_queue;
 
 // small helper function for error checking
 int getsize() {
@@ -125,6 +125,71 @@ int removeFromReadyQueue(int tid)
                 if (tid == (*iter)->getId())
                 {
                         ready_queue.erase(iter);
+                        return 0;
+                }
+        }
+
+        // Thread not found
+        return -1;
+}
+
+void addToBlockQueue(TCB *tcb, int waiting_for_tid)
+{
+	join_queue_entry entry{};
+	entry.tcb = tcb;
+	entry.waiting_for_tid = waiting_for_tid;
+	block_queue.push_back(entry);
+}
+
+join_queue_entry_t popFromBlockQueue()
+{
+	assert(!block_queue.empty());
+
+	join_queue_entry_t block_queue_head = block_queue.front();
+	block_queue.pop_front();
+	return block_queue_head;
+}
+
+
+int removeFromBlockQueue(int tid)
+{
+	for (deque<join_queue_entry_t>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
+        {
+                if (tid == (*iter).tcb->getId())
+                {
+                        block_queue.erase(iter);
+                        return 0;
+                }
+        }
+
+        // Thread not found
+        return -1;
+}
+
+void addToFinishedQueue(TCB *tcb, void *result)
+{
+	finished_queue_entry_t entry{};
+	entry.tcb = tcb;
+	entry.result = result;
+	finished_queue.push_back(entry);
+}
+
+finished_queue_entry_t popFromFinishedQueue()
+{
+	assert(!finished_queue.empty());
+
+	finished_queue_entry_t finished_queue_head = finished_queue.front();
+	finished_queue.pop_front();
+	return finished_queue_head;
+}
+
+int removeFromFinishedQueue(int tid)
+{
+	for (deque<finished_queue_entry_t>::iterator iter = finished_queue.begin(); iter != finished_queue.end(); ++iter)
+        {
+                if (tid == (*iter).tcb->getId())
+                {
+                        finished_queue.erase(iter);
                         return 0;
                 }
         }
