@@ -11,7 +11,7 @@ void wastetime(int length) {
       j = (j * j) % 13331;
       j = (j * j) % 13331;
       j = (j * j) % 13331;
-     
+
 	if (i%50000==0) {
 		cout << i/50000 << " " << flush;
 		}
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
       cerr << "uthread_init FAIL!\n" << endl;
       exit(1);
   }
-  
+
   int test = 100;
   void * arg = &test;
   int tid = uthread_create(longworker, arg);
@@ -61,10 +61,12 @@ int main(int argc, char *argv[]) {
 
   int test4 = 100;
   void * arg4 = &test4;
-  tid = uthread_create(longworker, arg4); 
+  tid = uthread_create(longworker, arg4);
 
   uthread_yield();
-  
+
+	cout << "got to bottom of main" << endl;
+
   return 0;
 
 }

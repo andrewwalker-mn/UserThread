@@ -328,17 +328,17 @@ static void switchThreads()
     TCB * next = popFromReadyQueue();
     int id = next->getId();
     cout << "switched to " << id << endl;
-    if(id == 0) { //I think we can/should reimplement this part with join
-      cout << "skipping 0" << endl;
-      cur_thread = next;
-      switchThreads();
-    }
-    else {
+    // if(id == 0) { //I think we can/should reimplement this part with join
+    //   cout << "skipping 0" << endl;
+    //   cur_thread = next;
+    //   switchThreads();
+    // }
+    // else {
       cur_thread = next;
       cur_thread->setState(RUNNING);
       setcontext(&cur_thread->_context);
       // next->loadContext();
-    }
+    // }
 }
 
 
@@ -460,7 +460,13 @@ void uthread_exit(void *retval)
   finished_queue_entry_t temp2 = {cur_thread, retval};
 
   addToFinishedQueue(cur_thread, retval);
-  uthread_yield();
+
+  if(getsize() > 0) {
+    uthread_yield();
+  }
+  else {
+    cout << "we done for now!" << endl;
+  }
   // check if there is a thread waiting on this one using curthread tid
   // if there's a thread waiting on this one, send it to the ready queue and yield control
   // send the current thread to the finished queue with its return values

@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
         g_cnt += *local_cnt;
 
         // Deallocate thread result
-        //delete local_cnt;
+        delete local_cnt;
     }
     delete[] threads;
 

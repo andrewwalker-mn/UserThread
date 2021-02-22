@@ -9,12 +9,22 @@ TCB::TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state)
 
 	std::cout << "initializing " << _tid <<  std::endl;
 	//From demo.cpp
-	getcontext(&_context);
-	_context.uc_stack.ss_sp = new char[STACK_SIZE];
-  _context.uc_stack.ss_size = STACK_SIZE;
-  _context.uc_stack.ss_flags = 0;
 
-    makecontext(&_context, (void(*)())stub, 2, start_routine, arg);
+	if (start_routine == nullptr) {
+		getcontext(&_context);
+		_context.uc_stack.ss_sp = new char[STACK_SIZE];
+	  _context.uc_stack.ss_size = STACK_SIZE;
+	  _context.uc_stack.ss_flags = 0;
+	}
+	else {
+		getcontext(&_context);
+		_context.uc_stack.ss_sp = new char[STACK_SIZE];
+	  _context.uc_stack.ss_size = STACK_SIZE;
+	  _context.uc_stack.ss_flags = 0;
+
+	    makecontext(&_context, (void(*)())stub, 2, start_routine, arg);
+	}
+
 		// stub(start_routine, arg);
 	/* Need to init the following
 	----int _tid;---------------// The thread id number.--
