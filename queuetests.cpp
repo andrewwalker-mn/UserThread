@@ -3,7 +3,6 @@
 #include "TCB.h"
 #include <iostream>
 #include <cassert>
-//~ #include "uthread.cpp"
 
 using namespace std;
 
@@ -12,12 +11,15 @@ int main(int argc, char *argv[]) {
   
   //~ Ready queue tests
   assert(isReady(0) == false);
+  assert(getsize() == 0);
   addToReadyQueue(tcb);
   assert(isReady(0));
+  assert(getsize() == 1);
   assert(popFromReadyQueue() == tcb);
   addToReadyQueue(tcb);
   assert(removeFromReadyQueue(0) == 0);
   assert(removeFromReadyQueue(0) == -1);
+  assert(getsize() == 0);
 
   //~ Block queue tests
   assert(isBlocked(0) == false);
@@ -48,6 +50,10 @@ int main(int argc, char *argv[]) {
   entry2 = popFromFinishedQueue();
   assert(entry2->tcb == tcb);
   assert(entry2->result == nullptr);
+
+  // Misc queue tests
+  //assert(getsize() == 0);
+//  assert(getQueue() == ready_queue);
 
   
 }
