@@ -30,12 +30,12 @@ using namespace std;
 //   Example join and finished queue entry types are provided above
 
 // Queues
-//~ static deque<TCB*> ready_queue;
+static deque<TCB*> ready_queue;
 
 
 //~ // not used for now, will be used in the future
-//~ static deque<join_queue_entry_t> block_queue;
-//~ static deque<finished_queue_entry_t> finish_queue;
+static deque<join_queue_entry_t> block_queue;
+static deque<finished_queue_entry_t> finished_queue;
 
 // small helper function for error checking
 int getsize() {
