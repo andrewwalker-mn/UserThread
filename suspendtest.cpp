@@ -16,8 +16,6 @@ void * worker(void * arg) {
 int main(int argc, char *argv[]) {
   int a = 0;
   void* arg = &a;
-  // worker(arg);
-
   uthread_init(10);
 
   int thread_count = 3;
@@ -31,7 +29,6 @@ int main(int argc, char *argv[]) {
 
   showQueues();
 
-  // Wait for all threads to complete
   unsigned long *local_cnt;
   uthread_join(1, (void**)&local_cnt);
 

@@ -65,9 +65,13 @@ int main(int argc, char *argv[]) {
 
   uthread_yield();
 
-	cout << "got to bottom of main" << endl;
-	cout << "total quantum: " << uthread_get_total_quantums() << endl;
+	unsigned long *local_cnt;
+	uthread_join(1,(void**)&local_cnt);
+	uthread_join(2,(void**)&local_cnt);
+	uthread_join(3,(void**)&local_cnt);
+	uthread_join(4,(void**)&local_cnt);
 
+	cout << endl << "finished main" << endl;
   return 0;
 
 }
