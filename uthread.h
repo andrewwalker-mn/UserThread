@@ -87,16 +87,19 @@ void addToReadyQueue(TCB *tcb);
 TCB* popFromReadyQueue();
 int removeFromReadyQueue(int tid);
 void addToBlockQueue(TCB *tcb, int waiting_for_tid);
-join_queue_entry_t popFromBlockQueue();
+join_queue_entry_t* popFromBlockQueue();
 int removeFromBlockQueue(int tid);
 void addToFinishedQueue(TCB *tcb, void *result);
-finished_queue_entry_t popFromFinishedQueue();
+finished_queue_entry_t* popFromFinishedQueue();
 int removeFromFinishedQueue(int tid);
 
 
+bool isReady(int tid);
+bool isBlocked(int tid);
+join_queue_entry_t* getBlocked(); //DO THIS NEXT
 bool isFinished(int tid); //function to check if tid is in the finished queue
-finished_queue_entry_t getFinished(int tid);//" to get an element of the finished queue via its tid
-bool hasWaiter(int tid); //see if there is an entry in the block queue with waiter tid
-join_queue_entry_t getWaiter(int tid); //return the queue entry that is waiting on tid 
+finished_queue_entry_t* getFinished(int tid);//" to get an element of the finished queue via its tid
+bool hasWaiter(int tid); //see if there is an entry in the block queue with waiter tid 
+join_queue_entry_t* getWaiter(int tid); //return the queue entry that is waiting on tid 
 
 #endif
