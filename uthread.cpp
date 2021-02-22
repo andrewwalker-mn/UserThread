@@ -322,7 +322,7 @@ static void switchThreads()
       addToReadyQueue(cur_thread);
     }
 
-    cout << "switching threads; queue size is " << getsize() << endl;
+    // cout << "switching threads; queue size is " << getsize() << endl;
 
     // get the next thread from queue
     TCB * next = popFromReadyQueue();
@@ -509,6 +509,17 @@ int uthread_suspend(int tid)
     removeFromReadyQueue(tid);
     thread->setState(BLOCK);
     addToBlockQueue(thread, -1);
+
+    cout << "state of ready queue" << endl;
+    for (int i = 0; i < ready_queue.size(); i++)
+        std::cout << ready_queue[i]->getId() <<  " ";
+    std::cout << '\n';
+
+    cout << "state of blocked queue" << endl;
+    for (int i = 0; i < block_queue.size(); i++)
+        std::cout << block_queue[i].tcb->getId() <<  " ";
+    std::cout << '\n';
+
   }
   // TCB * thread =
         // Move the thread specified by tid from whatever state it is
@@ -518,10 +529,21 @@ int uthread_suspend(int tid)
 int uthread_resume(int tid)
 {
   if(isBlocked(tid)) {
+    cout << "resuming tid" << tid << endl;
     join_queue_entry_t* blocked = getBlocked(tid);
     removeFromBlockQueue(tid);
     addToReadyQueue(blocked->tcb);
     blocked->tcb->setState(READY);
+
+    cout << "state of ready queue" << endl;
+    for (int i = 0; i < ready_queue.size(); i++)
+        std::cout << ready_queue[i]->getId() <<  " ";
+    std::cout << '\n';
+
+    cout << "state of blocked queue" << endl;
+    for (int i = 0; i < block_queue.size(); i++)
+        std::cout << block_queue[i].tcb->getId() <<  " ";
+    std::cout << '\n';
   }
         // Move the thread specified by tid back to the ready queue
 }

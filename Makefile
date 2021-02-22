@@ -4,6 +4,7 @@ DEPS = TCB.h uthread.h
 OBJ = TCB.o uthread.o timertest.o
 OBJ2 = TCB.o uthread.o test.o
 OBJ3 = TCB.o uthread.o queuetests.o
+OBJ4 = TCB.o uthread.o suspendtest.o
 OTHER = TCB.o uthread.o main.o
 
 %.o: %.cpp $(DEPS)
@@ -17,8 +18,11 @@ normtest: $(OBJ2)
 
 uthread-demo: $(OTHER)
 	$(CC) -o $@ $^ $(CFLAGS)
-	
+
 queuetest: $(OBJ3)
+	$(CC) -o $@ $^ $(CFLAGS)
+
+suspendtest: $(OBJ4)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 .PHONY: clean

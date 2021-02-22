@@ -53,7 +53,6 @@ int main(int argc, char *argv[]) {
     // Create threads
     for (int i = 0; i < thread_count; i++) {
         int tid = uthread_create(worker, &points_per_thread);
-        get_length();
         threads[i] = tid;
     }
     cout << "threads created" << endl;
