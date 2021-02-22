@@ -67,15 +67,15 @@ TCB* cur_thread;
 // Interrupt Management --------------------------------------------------------
 
 // Start a countdown timer to fire an interrupt
-void startInterruptTimer(int quantum_usecs) //used to be static
+void startInterruptTimer() //used to be static
 {
 	struct itimerval new_value;
 	new_value.it_value.tv_sec = 0;
 	new_value.it_interval.tv_sec = 0;
-	new_value.it_value.tv_usec = quantum_usecs; //quantum_usecs somehow?
-	new_value.it_interval.tv_usec = quantum_usecs; //quantum_usecs somehow?
+	new_value.it_value.tv_usec = 10; //quantum_usecs somehow?
+	new_value.it_interval.tv_usec = 10; //quantum_usecs somehow?
 	setitimer(ITIMER_VIRTUAL, &new_value, NULL);
-        cout << "timer is ticking" << endl;
+  cout << "timer is ticking" << endl;
 }
 
 // Block signals from firing timer interrupt
@@ -324,17 +324,14 @@ void showQueues() {
 // Switch to the next ready thread
 static void switchThreads()
 {
-    disableInterrupts();
     // save current thread context
     // int ret_val = cur_thread->saveContext();
     volatile int flag = 0;
     int ret_val = getcontext(&cur_thread->_context);
     if(ret_val == -1) {
-      enableInterrupts();
       return;
     }
     if (flag == 1) {
-      enableInterrupts();
       return;
     }
 
@@ -362,7 +359,6 @@ static void switchThreads()
       setcontext(&cur_thread->_context);
       // next->loadContext();
     // }
-    enableInterrupts();
 }
 
 
@@ -392,6 +388,8 @@ void sighandler(int signo) {
 int uthread_init(int quantum_usecs)
 {
         cout << "initializing" << endl;
+
+        // since the function is a nullptr, the TCB only gets context instead of making a new context
         TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, RUNNING);
         cur_thread = new_thread;
         everything.push_back(new_thread);
@@ -400,7 +398,7 @@ int uthread_init(int quantum_usecs)
         act.sa_handler = sighandler;
         sigaction(SIGVTALRM, &act, NULL);
 
-        startInterruptTimer(quantum_usecs);
+        startInterruptTimer();
         enableInterrupts();
 
         return 0;
@@ -409,14 +407,12 @@ int uthread_init(int quantum_usecs)
 int uthread_create(void* (*start_routine)(void*), void* arg)
 {
   // Create a new thread and add it to the ready queue
-  //disableInterrupts();
+  //~ disableInterrupts();
   cur_ID += 1;
   TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
-  disableInterrupts();
   addToReadyQueue(new_thread);
   everything.push_back(new_thread);
-  enableInterrupts();
-  
+
   return cur_ID;
 }
 
@@ -424,11 +420,9 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
 // not functional yet
 int uthread_join(int tid, void **retval)
 {
-    disableInterrupts();
-    if(isFinished(tid)) {
+  if(isFinished(tid)) {
     finished_queue_entry_t* temp = getFinished(tid);
     *retval = temp->result;
-    enableInterrupts();
     return 1;
   }
   else {
@@ -438,15 +432,12 @@ int uthread_join(int tid, void **retval)
       uthread_yield();
       finished_queue_entry_t* temp2 = getFinished(tid);
       *retval = temp2->result;
-      enableInterrupts();
       return 1;
     }
     else {
-      enableInterrupts();
       return -1;
     }
   }
-  enableInterrupts();
   return 1;
         // If the thread specified by tid is already terminated, just return
         // If the thread specified by tid is still running, block until it terminates
@@ -455,15 +446,12 @@ int uthread_join(int tid, void **retval)
 
 int uthread_yield(void)
 {
-    disableInterrupts();
     switchThreads();
-    enableInterrupts();
     return 1;
 }
 
 void uthread_exit(void *retval)
 {
-  disableInterrupts();
   int cur_id = cur_thread->getId();
   if(hasWaiter(cur_id)) {
     join_queue_entry_t* temp = getWaiter(cur_id);
@@ -484,12 +472,10 @@ void uthread_exit(void *retval)
   else {
     cout << "we done for now!" << endl;
   }
-  enableInterrupts();
 }
 
 int uthread_suspend(int tid)
 {
-  disableInterrupts();
   if(cur_thread->getId() == tid) {
     cur_thread->setState(BLOCK);
     addToBlockQueue(cur_thread, -1);
@@ -503,7 +489,6 @@ int uthread_suspend(int tid)
     thread->setState(BLOCK);
     addToBlockQueue(thread, -1);
   }
-  enableInterrupts();
   return 1;
   // TCB * thread =
         // Move the thread specified by tid from whatever state it is
@@ -512,43 +497,39 @@ int uthread_suspend(int tid)
 
 int uthread_resume(int tid)
 {
-  disableInterrupts();
   if(isBlocked(tid)) {
     join_queue_entry_t* blocked = getBlocked(tid);
     removeFromBlockQueue(tid);
     addToReadyQueue(blocked->tcb);
     blocked->tcb->setState(READY);
   }
-  enableInterrupts();
   return 1;
         // Move the thread specified by tid back to the ready queue
 }
 
 int uthread_self()
-{  
+{
   return cur_thread->getId();
+        // TODO
 }
 
 int uthread_get_total_quantums()
 {
-  disableInterrupts();	
   int tot = 0;
   for (int i = 0; i < everything.size(); i++)
       tot += everything[i]->getQuantum();
-  enableInterrupts();
+
   return tot;
         // TODO
 }
 
 int uthread_get_quantums(int tid)
 {
-  disableInterrupts();
   for (int i = 0; i < everything.size(); i++){
     if (everything[i]->getId() == tid) {
       return everything[i]->getQuantum();
     }
   }
-  enableInterrupts();
   return -1;
         // TODO
 }
