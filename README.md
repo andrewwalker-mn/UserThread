@@ -1,9 +1,9 @@
 David Ma (maxxx818) and Andrew Walker (walk0655)
 
 # Running and Testing the Code:
-A simple make command compiles everything, as does 'make alltests'. From there, specific tests are specified below
-Calling the bash script with "bash all_tests.sh" will automatically make all tests and run all tests
-You can also make individual tests by calling their names e.g. make normtest, timertest, queuetest, suspendtest, uthread-demo
+A simple make command compiles everything, as does 'make alltests'. From there, specific tests are specified below.
+Calling the bash script with "bash all_tests.sh" will automatically make all tests and run all tests.
+You can also make individual tests by calling their names e.g. make normtest, timertest, queuetest, suspendtest, uthread-demo.
 
 ## Tests:
 ### ./normtest
@@ -22,7 +22,7 @@ Tests timer setup, along with toggling timer interrupts.
 ### ./uthread-demo
 The demo code provided; demonstrates functionality of uthread_init, uthread_create, uthread_yield, uthread_join, signal handling, uthread_get_quantums, and uthread_get_total_quantums.
 - Main code is written in main.cpp
-- Takes in three arguments as specified - <total points> <threads> [quantum_usecs].
+- Takes in three arguments as specified - \<total points\> \<threads\> [quantum_usecs].
 - By default, quantum_usecs is 1. A good value for total points is 100000000, which is high enough to switch threads many times. A good value for threads is 8.
 - The code initializes threads, runs them with a worker function, and yields them based on the scheduler. The main thread joins on each thread to wait for them to complete.
 - At the end of main, an estimate for pi is produced, as well as the quantums each thread went through (via both uthread_get_total_quantums and uthread_get_quantums).
