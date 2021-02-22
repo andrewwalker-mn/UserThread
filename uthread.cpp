@@ -64,15 +64,15 @@ TCB* cur_thread;
 // Interrupt Management --------------------------------------------------------
 
 // Start a countdown timer to fire an interrupt
-void startInterruptTimer() //used to be static
+void startInterruptTimer(int quantum_usecs) //used to be static
 {
 	struct itimerval new_value;
 	new_value.it_value.tv_sec = 0;
 	new_value.it_interval.tv_sec = 0;
-	new_value.it_value.tv_usec = 10; //quantum_usecs somehow?
-	new_value.it_interval.tv_usec = 10; //quantum_usecs somehow?
+	new_value.it_value.tv_usec = quantum_usecs; //quantum_usecs somehow?
+	new_value.it_interval.tv_usec = quantum_usecs; //quantum_usecs somehow?
 	setitimer(ITIMER_VIRTUAL, &new_value, NULL);
-  cout << "timer is ticking" << endl;
+        cout << "timer is ticking" << endl;
 }
 
 // Block signals from firing timer interrupt
@@ -389,7 +389,7 @@ int uthread_init(int quantum_usecs)
         act.sa_handler = sighandler;
         sigaction(SIGVTALRM, &act, NULL);
 
-        startInterruptTimer();
+        startInterruptTimer(quantum_usecs);
         enableInterrupts();
 
         return 0;
