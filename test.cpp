@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
   uthread_yield();
 
 	cout << "got to bottom of main" << endl;
+	cout << "total quantum: " << uthread_get_total_quantums() << endl;
 
   return 0;
 

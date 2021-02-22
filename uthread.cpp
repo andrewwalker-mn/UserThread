@@ -37,21 +37,24 @@ static deque<TCB*> ready_queue;
 static deque<join_queue_entry_t> block_queue;
 static deque<finished_queue_entry_t> finished_queue;
 
+static deque<TCB*> everything;
+
+
 // small helper function for error checking
 int getsize() {
   return ready_queue.size();
 }
 
 // helper function just to test things out - won't be used later
-//deque<TCB*> getQueue() {
-//  return ready_queue;
-//}
+deque<TCB*> getQueue() {
+  return ready_queue;
+}
 
 // another helper function for testing
-// void get_length() {
-//  cout << "size" << endl;
-//  cout << ready_queue.size() << endl;
-//}
+void get_length() {
+  cout << "size" << endl;
+  cout << ready_queue.size() << endl;
+}
 
 // thread ID
 // is incremented every time a new thread is created, so that each thread ID is unique
@@ -111,7 +114,7 @@ void addToReadyQueue(TCB *tcb)
 // NOTE: Assumes at least one thread on the ready queue
 TCB* popFromReadyQueue()
 {
-        //assert(!ready_queue.empty());
+        assert(!ready_queue.empty());
 
         TCB *ready_queue_head = ready_queue.front();
         ready_queue.pop_front();
@@ -339,6 +342,8 @@ static void switchThreads()
       addToReadyQueue(cur_thread);
     }
 
+    // cout << "switching threads; queue size is " << getsize() << endl;
+
     // get the next thread from queue
     TCB * next = popFromReadyQueue();
     int id = next->getId();
@@ -374,6 +379,7 @@ void sighandler(int signo) {
   switch (signo) {
     case SIGVTALRM:
       cout << "interrupt-and-yield" << endl;
+      cur_thread->increaseQuantum();
       uthread_yield();
       break;
   }
@@ -384,6 +390,7 @@ int uthread_init(int quantum_usecs)
         cout << "initializing" << endl;
         TCB *new_thread = new TCB(cur_ID, nullptr, nullptr, RUNNING);
         cur_thread = new_thread;
+        everything.push_back(new_thread);
 
         struct sigaction act = {0};
         act.sa_handler = sighandler;
@@ -402,6 +409,7 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
   cur_ID += 1;
   TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
   addToReadyQueue(new_thread);
+  everything.push_back(new_thread);
 
   return cur_ID;
 }
@@ -505,12 +513,21 @@ int uthread_self()
 
 int uthread_get_total_quantums()
 {
-  return 1;
+  int tot = 0;
+  for (int i = 0; i < everything.size(); i++)
+      tot += everything[i]->getQuantum();
+
+  return tot;
         // TODO
 }
 
 int uthread_get_quantums(int tid)
 {
-  return 1;
+  for (int i = 0; i < everything.size(); i++){
+    if (everything[i]->getId() == tid) {
+      return everything[i]->getQuantum();
+    }
+  }
+  return -1;
         // TODO
 }

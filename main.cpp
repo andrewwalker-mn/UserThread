@@ -71,6 +71,7 @@ int main(int argc, char *argv[]) {
     delete[] threads;
 
     cout << "Pi: " << (4. * (double)g_cnt) / ((double)points_per_thread * thread_count) << endl;
+    cout << "total quantum: " << uthread_get_total_quantums() << endl;
 
     return 0;
 }
