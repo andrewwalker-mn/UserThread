@@ -10,6 +10,8 @@ OTHER = TCB.o uthread.o main.o
 %.o: %.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+alltests: timertest normtest uthread-demo queuetest suspendtest
+
 timertest: $(OBJ)
 	$(CC) -o $@ $^ $(CFLAGS)
 

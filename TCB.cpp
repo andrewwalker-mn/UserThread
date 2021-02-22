@@ -4,23 +4,24 @@ TCB::TCB(int tid, void *(*start_routine)(void* arg), void *arg, State state)
 {
 	_tid = tid;
 	_state = state;
-	_quantum = 0; //how to get this from uthread.cpp -> quantum_usecs
-
+	_quantum = 0; 
 	std::cout << "initializing " << _tid <<  std::endl;
-	//From demo.cpp
+
+	// check to see if this is being called by main thread
 	if (start_routine == nullptr) {
 		getcontext(&_context);
 		_context.uc_stack.ss_sp = new char[STACK_SIZE];
 	  _context.uc_stack.ss_size = STACK_SIZE;
 	  _context.uc_stack.ss_flags = 0;
 	}
+	// all other threads need a makecontext
 	else {
 		getcontext(&_context);
 		_context.uc_stack.ss_sp = new char[STACK_SIZE];
 	  _context.uc_stack.ss_size = STACK_SIZE;
 	  _context.uc_stack.ss_flags = 0;
 
-	    makecontext(&_context, (void(*)())stub, 2, start_routine, arg);
+	  makecontext(&_context, (void(*)())stub, 2, start_routine, arg);
 	}
 }
 
