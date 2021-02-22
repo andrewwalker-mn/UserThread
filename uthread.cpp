@@ -141,11 +141,11 @@ void addToBlockQueue(TCB *tcb, int waiting_for_tid)
 	block_queue.push_back(entry);
 }
 
-join_queue_entry_t popFromBlockQueue()
+join_queue_entry_t* popFromBlockQueue()
 {
 	assert(!block_queue.empty());
 
-	join_queue_entry_t block_queue_head = block_queue.front();
+	join_queue_entry_t* block_queue_head = &block_queue.front();
 	block_queue.pop_front();
 	return block_queue_head;
 }
@@ -174,11 +174,11 @@ void addToFinishedQueue(TCB *tcb, void *result)
 	finished_queue.push_back(entry);
 }
 
-finished_queue_entry_t popFromFinishedQueue()
+finished_queue_entry_t* popFromFinishedQueue()
 {
 	assert(!finished_queue.empty());
 
-	finished_queue_entry_t finished_queue_head = finished_queue.front();
+	finished_queue_entry_t* finished_queue_head = &finished_queue.front();
 	finished_queue.pop_front();
 	return finished_queue_head;
 }
@@ -198,49 +198,6 @@ int removeFromFinishedQueue(int tid)
         return -1;
 }
 
-// void addToQueue(TCB *tcb, State state)
-// {
-// 	switch (state) {
-// 		case READY:
-// 			ready_queue.push_back(tcb);
-// 			break;
-// 		case BLOCK:
-// 			block_queue.push_back(tcb);
-// 			break;
-// 		case FINISHED:
-// 			finish_queue.push_back(tcb);
-// 			break;
-// 		default:
-// 			assert(false);
-// 	}
-// }
-//
-// TCB* popFromQueue(State state) {
-// 	TCB *head;
-// 	switch (state) {
-// 		case READY:
-// 			assert(!ready_queue.empty());
-// 			head = ready_queue.front();
-// 			ready_queue.pop_front();
-// 			return head;
-// 			break;
-// 		case BLOCK:
-// 			assert(!block_queue.empty());
-// 			head = block_queue.front();
-// 			block_queue.pop_front();
-// 			return head;
-// 			break;
-// 		case FINISHED:
-// 			assert(!finish_queue.empty());
-// 			head = finish_queue.front();
-// 			finish_queue.pop_front();
-// 			return head;
-// 			break;
-// 		default:
-// 			assert(false);
-// 	}
-// }
-//
 TCB* getThread(int tid)
 {
 	 for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
@@ -250,23 +207,82 @@ TCB* getThread(int tid)
                         return *iter;
                 }
         }
-      // for (deque<TCB*>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
-      //   {
-      //           if (tid == (*iter)->getId())
-      //           {
-      //                   return *iter;
-      //           }
-      //   }
-      // for (deque<TCB*>::iterator iter = finish_queue.begin(); iter != finish_queue.end(); ++iter)
-      //   {
-      //           if (tid == (*iter)->getId())
-      //           {
-      //                   return *iter;
-      //           }
-      //   }
-
         // Thread not found
         return nullptr;
+}
+
+bool isReady(int tid)
+{
+	for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
+        {
+                if (tid == (*iter)->getId())
+                {
+                        return true;
+                }
+        }
+	return false;
+}
+
+bool isBlocked(int tid) {
+	for (deque<join_queue_entry_t>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
+        {
+                if (tid == (*iter).tcb->getId())
+                {
+                        return true;
+                }
+        }
+        return false;
+}
+
+bool isFinished(int tid) 
+{
+	for (deque<finished_queue_entry_t>::iterator iter = finished_queue.begin(); iter != finished_queue.end(); ++iter)
+        {
+                if (tid == (*iter).tcb->getId())
+                {
+                        return true;
+                }
+        }
+        return false;
+}
+
+finished_queue_entry_t* getFinished(int tid) 
+{
+	for (deque<finished_queue_entry_t>::iterator iter = finished_queue.begin(); iter != finished_queue.end(); ++iter)
+        {
+                if (tid == (*iter).tcb->getId())
+                {
+                        return &(*iter);
+                }
+        }
+
+        // Thread not found
+        assert(false);
+}
+
+bool hasWaiter(int tid) 
+{
+	for (deque<join_queue_entry_t>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
+        {
+                if (tid == (*iter).waiting_for_tid)
+                {
+                        return true;
+                }
+        }
+
+        return false;
+}
+
+join_queue_entry_t* getWaiter(int tid)
+{
+	for (deque<join_queue_entry_t>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
+        {
+                if (tid == (*iter).waiting_for_tid)
+                {
+                        return &(*iter);
+                }
+        }
+        assert(false);
 }
 
 // Helper functions ------------------------------------------------------------
@@ -366,15 +382,15 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
 int uthread_join(int tid, void **retval)
 {
   if(isFinished(tid)) {
-    finished_queue_entry_t temp = getFinished(tid);
-    *retval = temp.result;
-    return 1
+    //~ finished_queue_entry_t temp = getFinished(tid);
+    //~ *retval = temp.result;
+    return 1;
   }
   else {
     if(isReady(tid) || isBlocked(tid)) {
       cur_thread->setState(BLOCK);
       join_queue_entry_t temp = {cur_thread, tid};
-      addToBlockQueue(temp);
+      addToBlockQueue(cur_thread, tid);
       uthread_yield();
       finished_queue_entry_t temp2 = getFinished(tid);
       *retval = temp2.result;
@@ -421,12 +437,12 @@ void uthread_exit(void *retval)
     join_queue_entry_t temp = getWaiter(cur_id);
     TCB *blocked = temp.tcb;
     removeFromBlockQueue(blocked->getId());
-    addToReadyQueue(blocked->getId());
+    addToReadyQueue(blocked);
     blocked->setState(READY);
   }
   cur_thread->setState(FINISHED);
   finished_queue_entry_t temp2 = {cur_thread, retval};
-  addToFinishedQueue(temp2);
+  addToFinishedQueue(cur_thread, retval);
   uthread_yield();
   // check if there is a thread waiting on this one using curthread tid
   // if there's a thread waiting on this one, send it to the ready queue and yield control
