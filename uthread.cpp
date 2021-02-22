@@ -347,7 +347,7 @@ static void switchThreads()
     // get the next thread from queue
     TCB * next = popFromReadyQueue();
     int id = next->getId();
-    cout << "switched to " << id << endl;
+    // cout << "switched to " << id << endl;
     // if(id == 0) { //I think we can/should reimplement this part with join
     //   cout << "skipping 0" << endl;
     //   cur_thread = next;
@@ -378,7 +378,7 @@ void stub(void *(*start_routine)(void *), void *arg)
 void sighandler(int signo) {
   switch (signo) {
     case SIGVTALRM:
-      cout << "interrupt-and-yield" << endl;
+      // cout << "interrupt-and-yield" << endl;
       cur_thread->increaseQuantum();
       uthread_yield();
       break;

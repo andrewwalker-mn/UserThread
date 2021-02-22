@@ -72,6 +72,9 @@ int main(int argc, char *argv[]) {
 
     cout << "Pi: " << (4. * (double)g_cnt) / ((double)points_per_thread * thread_count) << endl;
     cout << "total quantum: " << uthread_get_total_quantums() << endl;
+    for (int i = 1; i < thread_count; i++) {
+      cout << "quantum for " << i << ": " << uthread_get_quantums(i) << endl;
+    }
 
     return 0;
 }
