@@ -96,7 +96,7 @@ int removeFromFinishedQueue(int tid);
 
 bool isReady(int tid);
 bool isBlocked(int tid);
-join_queue_entry_t* getBlocked(); //DO THIS NEXT
+join_queue_entry_t* getBlocked(int tid); //DO THIS NEXT
 bool isFinished(int tid); //function to check if tid is in the finished queue
 finished_queue_entry_t* getFinished(int tid);//" to get an element of the finished queue via its tid
 bool hasWaiter(int tid); //see if there is an entry in the block queue with waiter tid 
