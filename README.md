@@ -1,9 +1,11 @@
 David Ma (maxxx818) and Andrew Walker (walk0655)
 
 # Running and Testing the Code:
-A simple make command compiles everything, as does 'make alltests'. From there, specific tests are specified below
-Calling the bash script with "bash all_tests.sh" will automatically make all tests and run all tests
-You can also make individual tests by calling their names e.g. make normtest, timertest, queuetest, suspendtest, uthread-demo
+A simple make command compiles everything, as does 'make alltests'. From there, specific tests are specified below.
+
+Calling the bash script with "bash all_tests.sh" will automatically make all tests and run all tests.
+
+You can also make individual tests by calling their names e.g. make normtest, timertest, queuetest, suspendtest, uthread-demo.
 
 ## Tests:
 ### ./normtest
