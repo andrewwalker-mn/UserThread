@@ -19,7 +19,6 @@ TCB * popFromReadyQueue();
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
 
 
-int getsize();
 /* Initialize the thread library */
 // Return 0 on success, -1 on failure
 // GET DONE

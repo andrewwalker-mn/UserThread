@@ -431,6 +431,7 @@ int uthread_join(int tid, void **retval)
     if(isFinished(tid)) {
     finished_queue_entry_t* temp = getFinished(tid);
     *retval = temp->result;
+    delete temp->tcb;
     enableInterrupts();
     return 1;
   }
