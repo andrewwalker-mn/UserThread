@@ -407,10 +407,9 @@ int uthread_init(int quantum_usecs)
 int uthread_create(void* (*start_routine)(void*), void* arg)
 {
   // Create a new thread and add it to the ready queue
-
-  if (cur_ID == MAX_THREAD_NUM) {
+ if (cur_ID == MAX_THREAD_NUM) {
     throw runtime_error("Max thread number exceeded; please try with fewer threads");
-  }
+  }  
   cur_ID += 1;
   TCB *new_thread = new TCB(cur_ID, start_routine, arg, READY);
   addToReadyQueue(new_thread);
