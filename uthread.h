@@ -18,9 +18,6 @@ TCB * popFromReadyQueue();
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
 
-// helper function to get size of readyqueue
-int getsize();
-
 /* Initialize the thread library */
 // Return 0 on success, -1 on failure
 int uthread_init(int quantum_usecs);
