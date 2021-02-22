@@ -18,9 +18,8 @@ TCB * popFromReadyQueue();
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
 
-// helper function to get size of readyqueue
-int getsize();
 
+int getsize();
 /* Initialize the thread library */
 // Return 0 on success, -1 on failure
 // GET DONE
@@ -28,10 +27,12 @@ int uthread_init(int quantum_usecs);
 
 /* Create a new thread whose entry point is f */
 // Return new thread ID on success, -1 on failure
+// GET DONE
 int uthread_create(void* (*start_routine)(void*), void* arg);
 
 /* Join a thread */
 // Return 0 on success, -1 on failure
+// GET DONE
 int uthread_join(int tid, void **retval);
 
 /* yield */
@@ -62,7 +63,7 @@ int uthread_get_total_quantums();
 // Return the thread quantum set count
 int uthread_get_quantums(int tid);
 
-void startInterruptTimer(); //used to not be here
+void startInterruptTimer(int quantum_usecs); //used to not be here
 void disableInterrupts(); //used to not be here
 void enableInterrupts(); //used to not be here
 
