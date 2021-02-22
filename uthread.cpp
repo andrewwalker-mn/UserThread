@@ -6,17 +6,17 @@
 
 using namespace std;
 
-//~ // Finished queue entry type
-//~ typedef struct finished_queue_entry {
-  //~ TCB *tcb;             // Pointer to TCB
-  //~ void *result;         // Pointer to thread result (output)
-//~ } finished_queue_entry_t;
+// Finished queue entry type
+typedef struct finished_queue_entry {
+  TCB *tcb;             // Pointer to TCB
+  void *result;         // Pointer to thread result (output)
+} finished_queue_entry_t;
 
-//~ // Join queue entry type
-//~ typedef struct join_queue_entry {
-  //~ TCB *tcb;             // Pointer to TCB
-  //~ int waiting_for_tid;  // TID this thread is waiting on
-//~ } join_queue_entry_t;
+// Join queue entry type
+typedef struct join_queue_entry {
+  TCB *tcb;             // Pointer to TCB
+  int waiting_for_tid;  // TID this thread is waiting on
+} join_queue_entry_t;
 
 // You will need to maintain structures to track the state of threads
 // - uthread library functions refer to threads by their TID so you will want
@@ -33,7 +33,7 @@ static deque<TCB*> ready_queue;
 
 // not used for now, will be used in the future
 static deque<join_queue_entry_t> block_queue;
-static deque<finished_queue_entry_t> finished_queue;
+static deque<finished_queue_entry_t> finish_queue;
 
 // small helper function for error checking
 int getsize() {
@@ -125,71 +125,6 @@ int removeFromReadyQueue(int tid)
                 if (tid == (*iter)->getId())
                 {
                         ready_queue.erase(iter);
-                        return 0;
-                }
-        }
-
-        // Thread not found
-        return -1;
-}
-
-void addToBlockQueue(TCB *tcb, int waiting_for_tid)
-{
-	join_queue_entry entry{};
-	entry.tcb = tcb;
-	entry.waiting_for_tid = waiting_for_tid;
-	block_queue.push_back(entry);
-}
-
-join_queue_entry_t popFromBlockQueue()
-{
-	assert(!block_queue.empty());
-
-	join_queue_entry_t block_queue_head = block_queue.front();
-	block_queue.pop_front();
-	return block_queue_head;
-}
-
-
-int removeFromBlockQueue(int tid)
-{
-	for (deque<join_queue_entry_t>::iterator iter = block_queue.begin(); iter != block_queue.end(); ++iter)
-        {
-                if (tid == (*iter).tcb->getId())
-                {
-                        block_queue.erase(iter);
-                        return 0;
-                }
-        }
-
-        // Thread not found
-        return -1;
-}
-
-void addToFinishedQueue(TCB *tcb, void *result)
-{
-	finished_queue_entry_t entry{};
-	entry.tcb = tcb;
-	entry.result = result;
-	finished_queue.push_back(entry);
-}
-
-finished_queue_entry_t popFromFinishedQueue()
-{
-	assert(!finished_queue.empty());
-
-	finished_queue_entry_t finished_queue_head = finished_queue.front();
-	finished_queue.pop_front();
-	return finished_queue_head;
-}
-
-int removeFromFinishedQueue(int tid)
-{
-	for (deque<finished_queue_entry_t>::iterator iter = finished_queue.begin(); iter != finished_queue.end(); ++iter)
-        {
-                if (tid == (*iter).tcb->getId())
-                {
-                        finished_queue.erase(iter);
                         return 0;
                 }
         }
@@ -366,18 +301,18 @@ int uthread_create(void* (*start_routine)(void*), void* arg)
 int uthread_join(int tid, void **retval)
 {
   if(isFinished(tid)) {
-    finished_queue_entry_t temp = getFinished(tid);
-    *retval = temp.result;
+    finished_queue_entry_t* temp = getFinished(tid);
+    *retval = temp->result;
     return 1
   }
   else {
     if(isReady(tid) || isBlocked(tid)) {
       cur_thread->setState(BLOCK);
-      join_queue_entry_t temp = {cur_thread, tid};
-      addToBlockQueue(temp);
+      // join_queue_entry_t temp = {cur_thread, tid};
+      addToBlockQueue(cur_thread, tid);
       uthread_yield();
-      finished_queue_entry_t temp2 = getFinished(tid);
-      *retval = temp2.result;
+      finished_queue_entry_t* temp2 = getFinished(tid);
+      *retval = temp2->result;
       return 1;
     }
     else {
@@ -418,15 +353,15 @@ void uthread_exit(void *retval)
 {
   int cur_id = cur_thread->getId();
   if(hasWaiter(cur_id)) {
-    join_queue_entry_t temp = getWaiter(cur_id);
-    TCB *blocked = temp.tcb;
+    join_queue_entry_t* temp = getWaiter(cur_id);
+    TCB *blocked = temp->tcb;
     removeFromBlockQueue(blocked->getId());
-    addToReadyQueue(blocked->getId());
+    addToReadyQueue(blocked);
     blocked->setState(READY);
   }
   cur_thread->setState(FINISHED);
-  finished_queue_entry_t temp2 = {cur_thread, retval};
-  addToFinishedQueue(temp2);
+  // finished_queue_entry_t temp2 = {cur_thread, retval};
+  addToFinishedQueue(cur_thread, retval);
   uthread_yield();
   // check if there is a thread waiting on this one using curthread tid
   // if there's a thread waiting on this one, send it to the ready queue and yield control
@@ -458,12 +393,32 @@ void uthread_exit(void *retval)
 
 int uthread_suspend(int tid)
 {
+  if(cur_thread->getId() == tid) {
+    cur_thread->setState(BLOCK);
+    addToBlockQueue(cur_thread);
+    // trigger reschedule
+    // reset time slice
+    uthread_yield();
+  }
+  else if(isReady(tid)) {
+    TCB * thread = getThread(tid);
+    removeFromReadyQueue(tid);
+    thread->setState(BLOCK);
+    addToBlockQueue(thread, -1);
+  }
+  // TCB * thread =
         // Move the thread specified by tid from whatever state it is
         // in to the block queue
 }
 
 int uthread_resume(int tid)
 {
+  if(isBlocked(tid)) {
+    join_queue_entry_t* blocked = getBlocked(tid);
+    removeFromBlockQueue(tid);
+    addToReadyQueue(blocked->tcb);
+    blocked->tcb->setState(READY);
+  }
         // Move the thread specified by tid back to the ready queue
 }
 
