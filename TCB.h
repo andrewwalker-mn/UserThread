@@ -91,7 +91,7 @@ private:
 
 struct TCBLessThan {
   bool operator()(const TCB* lhs, const TCB* rhs) const {
-    return lhs->getQuantum() < rhs->getQuantum();
+    return lhs->getQuantum() > rhs->getQuantum();
   }
 };
 

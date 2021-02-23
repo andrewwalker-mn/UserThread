@@ -30,7 +30,31 @@ using namespace std;
 // - Separate join and finished "queues" can also help when supporting joining.
 //   Example join and finished queue entry types are provided above
 
-std::priority_queue<TCB*, std::vector<TCB*>, TCBLessThan> test;
+template<typename T, class Container=std::vector<T>, class Compare=std::less<typename Container::value_type>> class custom_priority_queue : public std::priority_queue<T, Container, Compare>
+{
+  public:
+      typedef typename Container::iterator iterator;
+      typedef typename Container::const_iterator const_iterator;
+
+      iterator begin() { return this->c.begin(); }
+      iterator end() { return this->c.end(); }
+      const_iterator begin() const { return this->c.begin(); }
+      const_iterator end() const { return this->c.end(); }
+
+      bool erase(const T& value) {
+        for (auto iter = this->c.begin(); iter != this->c.end(); ++iter){
+          if (*iter==value){
+            this->c.erase(iter);
+            std::make_heap(this->c.begin(), this->c.end(), this->comp);
+            return true;
+          }
+        }
+        return false;
+      }
+};
+
+custom_priority_queue<TCB*, std::vector<TCB*>, TCBLessThan> ready_two;
+// std::priority_queue<TCB*, std::vector<TCB*>, TCBLessThan> test;
 
 // Queues
 static deque<TCB*> ready_queue;
@@ -40,10 +64,7 @@ static deque<finished_queue_entry_t> finished_queue;
 // this one tracks every thread, to make certain operations easier
 static deque<TCB*> everything;
 
-// small helper function for error checking
-int getsize() {
-  return ready_queue.size();
-}
+
 
 // another helper function for testing
 void get_length() {
@@ -101,6 +122,73 @@ void enableInterrupts() //used to be static
 
 // Queue Management ------------------------------------------------------------
 
+// PRIORITY QUEUE STUFF
+// int getsize() {
+//   return ready_two.size();
+// }
+//
+// void addToReadyQueue(TCB *tcb)
+// {
+//         ready_two.push(tcb);
+// }
+//
+// TCB* popFromReadyQueue()
+// {
+//         assert(!ready_two.empty());
+//
+//         TCB *ready_queue_head = ready_two.top();
+//         ready_two.pop();
+//         return ready_queue_head;
+// }
+//
+// int removeFromReadyQueue(int tid)
+// {
+//         for (auto iter = ready_two.begin(); iter != ready_two.end(); ++iter)
+//         {
+//                 if (tid == (*iter)->getId())
+//                 {
+//                         ready_two.erase(*iter);
+//                         return 0;
+//                 }
+//         }
+//
+//         // Thread not found
+//         return -1;
+// }
+//
+// TCB* getThread(int tid)
+// {
+//       for (auto iter = ready_two.begin(); iter != ready_two.end(); ++iter)
+//       {
+//               if (tid == (*iter)->getId())
+//               {
+//                       return *iter;
+//               }
+//       }
+//         // Thread not found
+//         return nullptr;
+// }
+//
+// bool isReady(int tid)
+// {
+//   for (auto iter = ready_two.begin(); iter != ready_two.end(); ++iter)
+//   {
+//           if (tid == (*iter)->getId())
+//           {
+//                   return true;
+//           }
+//   }
+// 	return false;
+// }
+
+// END PRIORITY QUEUE STUFF
+
+// NON PRIORITY QUEUE STUFF
+// small helper function for error checking
+int getsize() {
+  return ready_queue.size();
+}
+
 // Add TCB to the back of the ready queue
 void addToReadyQueue(TCB *tcb)
 {
@@ -134,6 +222,34 @@ int removeFromReadyQueue(int tid)
         // Thread not found
         return -1;
 }
+
+TCB* getThread(int tid)
+{
+	 for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
+        {
+                if (tid == (*iter)->getId())
+                {
+                        return *iter;
+                }
+        }
+        // Thread not found
+        return nullptr;
+}
+
+bool isReady(int tid)
+{
+	for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
+        {
+                if (tid == (*iter)->getId())
+                {
+                        return true;
+                }
+        }
+	return false;
+}
+// END NON PRIORITY QUEUE STUFF
+
+
 
 void addToBlockQueue(TCB *tcb, int waiting_for_tid)
 {
@@ -198,31 +314,6 @@ int removeFromFinishedQueue(int tid)
 
         // Thread not found
         return -1;
-}
-
-TCB* getThread(int tid)
-{
-	 for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
-        {
-                if (tid == (*iter)->getId())
-                {
-                        return *iter;
-                }
-        }
-        // Thread not found
-        return nullptr;
-}
-
-bool isReady(int tid)
-{
-	for (deque<TCB*>::iterator iter = ready_queue.begin(); iter != ready_queue.end(); ++iter)
-        {
-                if (tid == (*iter)->getId())
-                {
-                        return true;
-                }
-        }
-	return false;
 }
 
 bool isBlocked(int tid) {
@@ -321,6 +412,7 @@ void showQueues() {
 // Switch to the next ready thread
 static void switchThreads()
 {
+    // cout << "switching switching" << endl;
     disableInterrupts();
     // save current thread context
     volatile int flag = 0;
