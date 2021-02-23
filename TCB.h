@@ -89,5 +89,11 @@ private:
         // ucontext_t _context;    // The thread's saved context
 };
 
+struct TCBLessThan {
+  bool operator()(const TCB* lhs, const TCB* rhs) const {
+    return lhs->getQuantum() < rhs->getQuantum();
+  }
+};
+
 
 #endif /* TCB_H */

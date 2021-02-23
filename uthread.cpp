@@ -2,6 +2,7 @@
 // #include "TCB.h"
 #include <cassert>
 #include <deque>
+#include <queue>
 
 
 using namespace std;
@@ -28,6 +29,8 @@ using namespace std;
 //   Starter code for a ready queue is provided to you
 // - Separate join and finished "queues" can also help when supporting joining.
 //   Example join and finished queue entry types are provided above
+
+std::priority_queue<TCB*, std::vector<TCB*>, TCBLessThan> test;
 
 // Queues
 static deque<TCB*> ready_queue;
@@ -417,7 +420,7 @@ int uthread_join(int tid, void **retval)
     delete temp->tcb;
     removeFromFinishedQueue(tid);
     enableInterrupts();
-    return 1;
+    return 0;
   }
     else {
       // if the specified thread is ready or is blocked, move the caller thread to the blocked queue
