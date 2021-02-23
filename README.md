@@ -1,9 +1,11 @@
 David Ma (maxxx818) and Andrew Walker (walk0655)
 
 # Running and Testing the Code:
-A simple make command compiles everything, as does 'make alltests'. From there, specific tests are specified below
-Calling the bash script with "bash all_tests.sh" will automatically make all tests and run all tests
-You can also make individual tests by calling their names e.g. make normtest, timertest, queuetest, suspendtest, uthread-demo
+A simple make command compiles everything, as does 'make alltests'. From there, specific tests are specified below.
+
+Calling the bash script with "bash all_tests.sh" will automatically make all tests and run all tests.
+
+You can also make individual tests by calling their names e.g. make normtest, timertest, queuetest, suspendtest, uthread-demo.
 
 ## Tests:
 ### ./normtest
@@ -11,7 +13,7 @@ Demonstrates functionality of uthread_init, uthread_create, uthread_yield, uthre
 - The body of the code is written in test.cpp
 - Initializes the main thread with uthread_init, creates some worker threads with uthread_create, and yields them over time with the timer interrupt.
 - The main thread waits on each worker thread using uthread_join
-- Each worker simply does some arithmetic and counts up, occasionally printing values
+- Each worker simply does some arithmetic and counts up, occasionally printing values. It should just look like a large chunk of printed numbers, with multiple repeats as different threads print the same numbers.
 
 ### ./timertest
 Tests timer setup, along with toggling timer interrupts.
@@ -25,7 +27,7 @@ The demo code provided; demonstrates functionality of uthread_init, uthread_crea
 - Takes in three arguments as specified - <total points> <threads> [quantum_usecs].
 - By default, quantum_usecs is 1. A good value for total points is 100000000, which is high enough to switch threads many times. A good value for threads is 8.
 - The code initializes threads, runs them with a worker function, and yields them based on the scheduler. The main thread joins on each thread to wait for them to complete.
-- At the end of main, an estimate for pi is produced, as well as the quantums each thread went through (via both uthread_get_total_quantums and uthread_get_quantums).
+- At the end of main, an estimate for pi is produced, as well as the quantums each thread went through (via both uthread_get_total_quantums and uthread_get_quantums). The quantums won't be identical for each thread, but they should be approximately the same.
 
 ### ./queuetests
 Tests our various functions to manipulate the readyqueue, the blockqueue, and the finishqueue.
