@@ -3,12 +3,12 @@
 #ifndef _UTHREADS_H
 #define _UTHREADS_H
 
-class TCB;
-TCB * popFromReadyQueue();
-
 
 #include "TCB.h"
 #include <deque>
+
+class TCB;
+TCB * popFromReadyQueue();
 
 /*
  * User-Level Threads Library (uthreads)
@@ -17,6 +17,9 @@ TCB * popFromReadyQueue();
 
 #define MAX_THREAD_NUM 100 /* maximal number of threads */
 #define STACK_SIZE 4096 /* stack size per thread (in bytes) */
+
+// helper function to get size of readyqueue
+int getsize();
 
 /* Initialize the thread library */
 // Return 0 on success, -1 on failure
@@ -97,5 +100,7 @@ bool hasWaiter(int tid); //see if there is an entry in the block queue with wait
 join_queue_entry_t* getWaiter(int tid); //return the queue entry that is waiting on tid
 int getsize();
 void showQueues(); // prints the tid of all elements in each queue
+
+
 
 #endif
