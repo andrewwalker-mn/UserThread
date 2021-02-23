@@ -1,5 +1,8 @@
 David Ma (maxxx818) and Andrew Walker (walk0655)
 
+# Directory Structure:
+The requested deque implementation is in the main folder. Within the subfolder "priority_queue" is our extra credit implementation. Each folder is designed to be independent and all of the following instructions can be executed in both <main_folder>/ and <main_folder>/priority_queue/
+
 # Running and Testing the Code:
 A simple make command compiles everything, as does 'make alltests'. From there, specific tests are specified below.
 
@@ -41,3 +44,9 @@ Tests uthread_suspend and uthread_resume, since they're not tested in the demo
 - The first thread runs first, which suspends and then resumes the second thread. While the first thread is running, we see that the main thread is blocked because it's waiting on the first thread, and the second thread goes to block and then is moved back to ready.
 - Control is naturally yielded to the third thread, which again suspends and resumes the second thread. This time, note that the first thread is in the finished queue.
 - After the third thread finishes, control is yielded back to the main thread, which finishes naturally. The second thread is skipped, since the main thread never joined on it.
+
+### ./priotest (only for /priority_queue/ extra credit implementation)
+Tests the priority queue's ability to prioritize. It shows that the threads with the fewest quantums actively in running are first run from the ready queue before any other threads. 
+- Initializes three threads, and artificially increases the quanta count of the third
+- Runs workers that show the state of the queue and instantly yield
+- Notice that tid 1 and 2 are completed before tid 3 gets any compute time (as it's already had quanta). 
