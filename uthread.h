@@ -58,12 +58,6 @@ int uthread_get_total_quantums();
 // Return the thread quantum set count
 int uthread_get_quantums(int tid);
 
-void startInterruptTimer(int quantum_usecs); //used to not be here
-void disableInterrupts(); //used to not be here
-void enableInterrupts(); //used to not be here
-
-// whole bunch of helper functions to work with the various queues
-// should be rather self-explanatory, since each function is quite simple
 
 typedef struct finished_queue_entry {
   TCB *tcb;             // Pointer to TCB
@@ -76,6 +70,10 @@ typedef struct join_queue_entry {
   int waiting_for_tid;  // TID this thread is waiting on
 } join_queue_entry_t;
 
+
+void startInterruptTimer(int quantum_usecs); // starts the interrupt timer that signals SIGVTALRM every quantum_usecs 
+void disableInterrupts(); // disables the interrupt timer. Intended to protect API code from being interrupted 
+void enableInterrupts(); // reenables the interrupt timer. Intended to allow user code to be interrupted again
 TCB* getThread(int tid); // get the TCB specified by tid
 void addToReadyQueue(TCB *tcb); // add a TCB to the ready queue
 TCB* popFromReadyQueue(); // pop the next TCB from the ready queue

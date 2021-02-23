@@ -415,6 +415,7 @@ int uthread_join(int tid, void **retval)
     finished_queue_entry_t* temp = getFinished(tid);
     *retval = temp->result;
     delete temp->tcb;
+    removeFromFinishedQueue(tid);
     enableInterrupts();
     return 1;
   }
@@ -429,6 +430,7 @@ int uthread_join(int tid, void **retval)
         finished_queue_entry_t* temp2 = getFinished(tid);
         *retval = temp2->result;
         delete temp2->tcb;
+	removeFromFinishedQueue(tid);
 	enableInterrupts();
         return 0;
       }
